@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="flex-bison-cpp-example">
+</Property><Property Name="Solution File" Value="C:\work\608Database\exmaple\flex-bison-cpp-example-0.1.4\flex-bison-cpp-example.sln">
+</Property><Property Name="Date" Value="2009年11月8日">
+</Property><Property Name="Time" Value="下午 14:04">
+</Property></Properties><Event ErrorLevel="0" Project="exprtest" Source="src\exprtest.vcproj" Description="Web deployment to the local IIS server is no longer supported. The Web Deployment build tool has been removed from your project settings.">
+</Event><Event ErrorLevel="1" Project="exprtest" Source="src\exprtest.vcproj" Description="This application has been updated to include settings related to the User Account Control (UAC) feature of Windows Vista. By default, when run on Windows Vista with UAC enabled, this application is marked to run with the same privileges as the process that launched it. This marking also disables the application from running with virtualization. You can change UAC related settings from the Property Pages of the project.">
+</Event><Event ErrorLevel="0" Project="exprtest" Source="src\exprtest.vcproj" Description="Project upgraded successfully.">
+</Event><Event ErrorLevel="3" Project="exprtest" Source="src\exprtest.vcproj" Description="Converted">
+</Event><Event ErrorLevel="1" Project="libexampleparser" Source="src\libexampleparser.vcproj" Description="This application has been updated to include settings related to the User Account Control (UAC) feature of Windows Vista. By default, when run on Windows Vista with UAC enabled, this application is marked to run with the same privileges as the process that launched it. This marking also disables the application from running with virtualization. You can change UAC related settings from the Property Pages of the project.">
+</Event><Event ErrorLevel="0" Project="libexampleparser" Source="src\libexampleparser.vcproj" Description="Project upgraded successfully.">
+</Event><Event ErrorLevel="3" Project="libexampleparser" Source="src\libexampleparser.vcproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="flex-bison-cpp-example.sln" Description="Solution converted successfully">
+</Event><Event ErrorLevel="3" Project="" Source="flex-bison-cpp-example.sln" Description="Converted">
+</Event></UpgradeLog>
