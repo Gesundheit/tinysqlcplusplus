@@ -18,6 +18,7 @@ namespace example {
 
 	bool Driver::parse_stream(std::istream& in, const std::string& sname)
 	{
+		bool r = false;
 		streamname = sname;
 
 		Scanner scanner(&in);
@@ -26,7 +27,10 @@ namespace example {
 
 		Parser parser(*this);
 		parser.set_debug_level(trace_parsing);
-		return (parser.parse() == 0);
+		r = (parser.parse() == 0);
+
+//test the condition here
+		return r;
 	}
 
 	bool Driver::parse_file(const std::string &filename)

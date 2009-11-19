@@ -1,1 +1,1 @@
-SELECT a,b FROM c,d WHERE x OR y ORDER BY u
+DROP TABLE aaa

@@ -117,9 +117,10 @@ namespace example
     double 			doubleVal;
     std::string*		stringVal;
     class CalcNode*		calcnode;
+	class SQLTree* tree_s;
 }
 /* Line 35 of lalr1.cc.  */
-#line 123 "parser.hh"
+#line 124 "parser.hh"
 	;
 #else
     typedef YYSTYPE semantic_type;
