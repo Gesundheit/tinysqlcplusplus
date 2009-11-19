@@ -38,7 +38,7 @@
 #include "parser.hh"
 
 /* User implementation prologue.  */
-#line 105 "parser.yy"
+#line 108 "parser.yy"
 
 
 #include "driver.h"
@@ -211,12 +211,12 @@ namespace example
     switch (yytype)
       {
         case 32: /* "\"NAME\"" */
-#line 100 "parser.yy"
+#line 103 "parser.yy"
 	{ delete (yyvaluep->stringVal); };
 #line 217 "parser.cc"
 	break;
       case 33: /* "\"STRING\"" */
-#line 101 "parser.yy"
+#line 104 "parser.yy"
 	{ delete (yyvaluep->stringVal); };
 #line 222 "parser.cc"
 	break;
@@ -416,198 +416,201 @@ namespace example
     switch (yyn)
       {
 	  case 7:
-#line 131 "parser.yy"
-    {printf("DROP TABLE\n");;}
+#line 134 "parser.yy"
+    {printf("DROP TABLE\n");
+																		driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(3) - (3)].tree_s),NULL,NULL,NULL,NULL,drop_st);
+																		driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(3) - (3)].tree_s),NULL,NULL,NULL,NULL,drop_st) );
+																		;}
     break;
 
   case 8:
-#line 135 "parser.yy"
+#line 141 "parser.yy"
     {printf("CREATE TABLE\n");;}
     break;
 
   case 9:
-#line 139 "parser.yy"
+#line 145 "parser.yy"
     {printf("INSERT INTO\n");;}
     break;
 
   case 10:
-#line 146 "parser.yy"
+#line 152 "parser.yy"
     {printf("SELECT FROM\n");;}
     break;
 
   case 11:
-#line 150 "parser.yy"
+#line 156 "parser.yy"
     {printf("DELETE FROM\n");;}
     break;
 
   case 13:
-#line 155 "parser.yy"
+#line 161 "parser.yy"
     {printf("WHERE\n");;}
     break;
 
   case 15:
-#line 160 "parser.yy"
+#line 166 "parser.yy"
     {printf("ORDER BY\n");;}
     break;
 
   case 16:
-#line 163 "parser.yy"
+#line 169 "parser.yy"
     {printf("select_expr_list\n");;}
     break;
 
   case 17:
-#line 164 "parser.yy"
+#line 170 "parser.yy"
     {printf("*\n");;}
     break;
 
   case 19:
-#line 168 "parser.yy"
+#line 174 "parser.yy"
     {printf(",\n");;}
     break;
 
   case 20:
-#line 171 "parser.yy"
+#line 177 "parser.yy"
     {printf("expr\n");;}
     break;
 
   case 21:
-#line 175 "parser.yy"
+#line 181 "parser.yy"
     {printf("atom\n");;}
     break;
 
   case 22:
-#line 176 "parser.yy"
+#line 182 "parser.yy"
     {printf("ADD\n");;}
     break;
 
   case 23:
-#line 177 "parser.yy"
+#line 183 "parser.yy"
     {printf("SUB\n");;}
     break;
 
   case 24:
-#line 178 "parser.yy"
+#line 184 "parser.yy"
     {printf("MUL\n");;}
     break;
 
   case 25:
-#line 179 "parser.yy"
+#line 185 "parser.yy"
     {printf("DIV\n");;}
     break;
 
   case 26:
-#line 180 "parser.yy"
+#line 186 "parser.yy"
     {printf("AND\n");;}
     break;
 
   case 27:
-#line 181 "parser.yy"
+#line 187 "parser.yy"
     {printf("OR\n");;}
     break;
 
   case 28:
-#line 182 "parser.yy"
+#line 188 "parser.yy"
     {printf("NOT\n");;}
     break;
 
   case 29:
-#line 183 "parser.yy"
+#line 189 "parser.yy"
     {std::cout<<*(yysemantic_stack_[(3) - (2)].stringVal);printf("COMP\n");;}
     break;
 
   case 32:
-#line 188 "parser.yy"
+#line 194 "parser.yy"
     {printf(",\n");;}
     break;
 
   case 33:
-#line 191 "parser.yy"
+#line 197 "parser.yy"
     {std::cout<<*(yysemantic_stack_[(1) - (1)].stringVal);std::cout<<"\n";;}
     break;
 
   case 34:
-#line 195 "parser.yy"
+#line 201 "parser.yy"
     {printf("VALUES\n");;}
     break;
 
   case 35:
-#line 196 "parser.yy"
+#line 202 "parser.yy"
     {printf("SELECT\n");;}
     break;
 
   case 37:
-#line 201 "parser.yy"
+#line 207 "parser.yy"
     {printf(",");;}
     break;
 
   case 38:
-#line 205 "parser.yy"
+#line 211 "parser.yy"
     {printf("atom\n");;}
     break;
 
   case 40:
-#line 210 "parser.yy"
+#line 216 "parser.yy"
     {printf(",\n");;}
     break;
 
   case 45:
-#line 222 "parser.yy"
+#line 228 "parser.yy"
     {printf(",\n");;}
     break;
 
   case 47:
-#line 227 "parser.yy"
+#line 233 "parser.yy"
     {printf("DISTINCT");;}
     break;
 
   case 49:
-#line 235 "parser.yy"
+#line 241 "parser.yy"
     {std::cout<<"literal";std::cout<<"\n";;}
     break;
 
   case 50:
-#line 236 "parser.yy"
+#line 242 "parser.yy"
     {std::cout<<(yysemantic_stack_[(1) - (1)].integerVal);std::cout<<"\n";;}
     break;
 
   case 51:
-#line 237 "parser.yy"
+#line 243 "parser.yy"
     {std::cout<<"column_ref";std::cout<<"\n";;}
     break;
 
   case 53:
-#line 245 "parser.yy"
+#line 251 "parser.yy"
     {std::cout<<*(yysemantic_stack_[(1) - (1)].stringVal);std::cout<<"\n";;}
     break;
 
   case 54:
-#line 246 "parser.yy"
+#line 252 "parser.yy"
     {std::cout<<*(yysemantic_stack_[(3) - (1)].stringVal)<<"."<<*(yysemantic_stack_[(3) - (3)].stringVal);std::cout<<"\n";;}
     break;
 
   case 55:
-#line 258 "parser.yy"
-    {std::cout<<*(yysemantic_stack_[(1) - (1)].stringVal);std::cout<<"\n";;}
+#line 264 "parser.yy"
+    {std::cout<<*(yysemantic_stack_[(1) - (1)].stringVal);std::cout<<"\n";(yyval.tree_s) = (SQLTree *)driver.calc.aSQLTree->make_variable(*(yysemantic_stack_[(1) - (1)].stringVal));;}
     break;
 
   case 56:
-#line 262 "parser.yy"
+#line 268 "parser.yy"
     {std::cout<<*(yysemantic_stack_[(1) - (1)].stringVal);std::cout<<"\n";;}
     break;
 
   case 57:
-#line 266 "parser.yy"
+#line 272 "parser.yy"
     {printf("INTEGER");;}
     break;
 
   case 58:
-#line 267 "parser.yy"
+#line 273 "parser.yy"
     {printf("STR20");;}
     break;
 
 
     /* Line 675 of lalr1.cc.  */
-#line 611 "parser.cc"
+#line 614 "parser.cc"
 	default: break;
       }
     YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
@@ -1026,12 +1029,12 @@ namespace example
   const unsigned short int
   Parser::yyrline_[] =
   {
-         0,   123,   123,   124,   125,   126,   127,   131,   135,   139,
-     143,   150,   154,   155,   159,   160,   163,   164,   167,   168,
-     171,   175,   176,   177,   178,   179,   180,   181,   182,   183,
-     184,   187,   188,   191,   195,   196,   200,   201,   205,   206,
-     210,   211,   214,   216,   221,   222,   225,   227,   231,   235,
-     236,   237,   241,   245,   246,   258,   262,   266,   267
+         0,   126,   126,   127,   128,   129,   130,   134,   141,   145,
+     149,   156,   160,   161,   165,   166,   169,   170,   173,   174,
+     177,   181,   182,   183,   184,   185,   186,   187,   188,   189,
+     190,   193,   194,   197,   201,   202,   206,   207,   211,   212,
+     216,   217,   220,   222,   227,   228,   231,   233,   237,   241,
+     242,   243,   247,   251,   252,   264,   268,   272,   273
   };
 
   // Print the state stack on the debug stream.
@@ -1121,7 +1124,7 @@ namespace example
 
 } // namespace example
 
-#line 278 "parser.yy"
+#line 284 "parser.yy"
  /*** Additional Code ***/
 
 void example::Parser::error(const Parser::location_type& l,

@@ -9,6 +9,104 @@
 #include <ostream>
 #include <stdexcept>
 #include <cmath>
+#include <stdlib.h>
+
+enum treetype {statement_node, number_node, variable_node};
+enum stmttype {select_st, insert_st, delete_st, drop_st};
+typedef struct tree_t {
+	enum treetype nodetype;
+	union {
+		struct {
+			struct tree_t *arg1, *arg2, *arg3, *arg4, *arg5; 
+			enum stmttype type;
+		} stmt;
+		int number;
+   	    char* variable;
+	} body;
+} tree;
+
+class SQLTree{
+private:
+public:
+    int count;
+
+    SQLTree(){
+    }
+
+	//void make_stmt (tree *arg1, tree *arg2, tree *arg3, tree *arg4, tree *arg5, enum stmttype t) {
+        //printf(arg1->body.variable);
+
+		//root = new(tree);
+		//root->nodetype= statement_node;
+		//root->body.stmt.arg1= arg1;
+		//root->body.stmt.arg2= arg2;
+		//root->body.stmt.arg3= arg3;
+		//root->body.stmt.arg4= arg4;
+		//root->body.stmt.arg5= arg5;
+		//root->body.stmt.arg5= arg5;
+		//root->body.stmt.type= t;
+	//}
+
+	tree* make_stmt (tree *arg1, tree *arg2, tree *arg3, tree *arg4, tree *arg5, enum stmttype t) {
+		tree* result = new(tree);
+		result->nodetype= statement_node;
+		result->body.stmt.arg1= arg1;
+		result->body.stmt.arg2= arg2;
+		result->body.stmt.arg3= arg3;
+		result->body.stmt.arg4= arg4;
+		result->body.stmt.arg5= arg5;
+		result->body.stmt.arg5= arg5;
+		result->body.stmt.type= t;
+
+		return result;
+	}
+
+	tree* make_variable (std::string v) {
+		tree* result = new(tree);
+		result->nodetype= variable_node;
+
+		size_t length = v.length();
+		if(length== 0){
+			printf("string should not be null\n");
+			result->body.variable="";
+		}else{
+			char* pBuf = new char[length+1];
+			v.copy(pBuf,length,0);
+			pBuf[length]='\0';
+			result->body.variable= pBuf;
+		} 
+
+		return result;
+	}
+
+	void print_tree (tree *t,int level) {
+printf("here %d",count);
+		//int step =4;
+		//if (t!= NULL)
+		//	switch (t->nodetype)
+		//{
+		//	case statement_node:
+		//		if(t->body.stmt.type==drop_st){
+		//			print_tree (t->body.stmt.arg1, level+step);
+		//			printf("DROP TABLE\n");
+		//			break;
+		//		}
+		//	case variable_node:
+		//		printf ("%*c%*s\n", level, ' ', t->body.variable);
+		//		printf("%*c%s\n", level, ' ', t->body.variable);
+		//		break;
+		//}
+	}
+
+	//tree* getTree(){
+    //return this->root;
+	//}
+
+};
+
+
+
+
 
 /** CalcNode is the abstract base class for calculation nodes. From it the
  * different nullary, unary and binary nodes are derived. */
@@ -301,12 +399,13 @@ class CalcContext
 {
 public:
 
+	std::vector<tree*> stmt_vector;
+	SQLTree* aSQLTree;
+
     /// type of the variable storage
     typedef std::map<std::string, double> variablemap_type;
-
     /// variable storage. maps variable string to doubles
     variablemap_type		variables;
-
     /// array of unassigned expressions found by the parser. these are then
     /// outputted to the user.
     std::vector<CalcNode*>	expressions;

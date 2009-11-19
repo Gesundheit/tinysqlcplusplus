@@ -58,6 +58,7 @@
     double 			doubleVal;
     std::string*		stringVal;
     class CalcNode*		calcnode;
+	class SQLTree* tree_s;
 }
 
 
@@ -77,6 +78,8 @@
 %token			TABLE	 "TABLE"
 %token			VALUES	 "VALUES"
 %token			WHERE	 "WHERE"
+%type <tree_s> table statement drop_table_statement insert_statement create_table_statement select_statement delete_statement
+
 
 %left			OR	 "OR"
 %left			AND	 "AND"
@@ -128,7 +131,10 @@ statement:
 		;
 
 drop_table_statement:
-		DROP TABLE table												{printf("DROP TABLE\n");}
+		DROP TABLE table												{printf("DROP TABLE\n");
+																		driver.calc.aSQLTree->make_stmt((tree *)$3,NULL,NULL,NULL,NULL,drop_st);
+																		driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,NULL,NULL,NULL,NULL,drop_st) );
+																		}
 		;
 
 create_table_statement:
@@ -255,7 +261,7 @@ column_ref:
 /*		; */
 
 table:
-		NAME										{std::cout<<*$1;std::cout<<"\n";}							  									
+		NAME										{std::cout<<*$1;std::cout<<"\n";$$ = (SQLTree *)driver.calc.aSQLTree->make_variable(*$1);}							  									
 		;
 
 literal:
