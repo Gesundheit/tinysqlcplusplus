@@ -155,9 +155,9 @@ select_statement:
 																	driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st);
 																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st) );
 																	if($2==NULL){
-																	  ((tree *)$$)->body.stmt.dtype=nodist;
+																	/*  ((tree *)$$)->body.stmt.dtype=nodist; */
 																	}else{
-																	  ((tree *)$$)->body.stmt.dtype=dist;																   
+																	/*  ((tree *)$$)->body.stmt.dtype=dist;	*/															   
 																	}
 }  
 		;

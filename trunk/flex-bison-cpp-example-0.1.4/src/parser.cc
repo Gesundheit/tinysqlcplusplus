@@ -439,9 +439,9 @@ namespace example
 																	driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(7) - (3)].tree_s),(tree *)(yysemantic_stack_[(7) - (5)].tree_s),(tree *)(yysemantic_stack_[(7) - (6)].tree_s),(tree *)(yysemantic_stack_[(7) - (7)].tree_s),select_st);
 																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(7) - (3)].tree_s),(tree *)(yysemantic_stack_[(7) - (5)].tree_s),(tree *)(yysemantic_stack_[(7) - (6)].tree_s),(tree *)(yysemantic_stack_[(7) - (7)].tree_s),select_st) );
 																	if((yysemantic_stack_[(7) - (2)].tree_s)==NULL){
-																	  ((tree *)(yyval.tree_s))->body.stmt.dtype=nodist;
+																	/*  ((tree *)$$)->body.stmt.dtype=nodist; */
 																	}else{
-																	  ((tree *)(yyval.tree_s))->body.stmt.dtype=dist;																   
+																	/*  ((tree *)$$)->body.stmt.dtype=dist;	*/															   
 																	}
 ;}
     break;
