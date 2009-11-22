@@ -79,7 +79,9 @@
 %token			VALUES	 "VALUES"
 %token			WHERE	 "WHERE"
 %type <tree_s> table statement drop_table_statement insert_statement create_table_statement select_statement delete_statement
-
+%type <tree_s> opt_where opt_column_commalist opt_orderby opt_distinct  
+%type <tree_s> base_table_element_commalist  values_or_query_spec select_expr_di_list table_references select_expr_list
+%type <tree_s> expr atom column_ref opt_column_ref base_table_element column_commalist insert_atom_commalist insert_atom
 
 %left			OR	 "OR"
 %left			AND	 "AND"
@@ -132,8 +134,8 @@ statement:
 
 drop_table_statement:
 		DROP TABLE table												{printf("DROP TABLE\n");
-																		driver.calc.aSQLTree->make_stmt((tree *)$3,NULL,NULL,NULL,NULL,drop_st);
-																		driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,NULL,NULL,NULL,NULL,drop_st) );
+																		driver.calc.aSQLTree->make_stmt((tree *)$3,NULL,NULL,NULL,drop_st);
+																		driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,NULL,NULL,NULL,drop_st) );
 																		}
 		;
 
@@ -149,7 +151,15 @@ select_statement:
 		SELECT opt_distinct select_expr_di_list 
 		FROM table_references 
 		opt_where  
-		opt_orderby 												{printf("SELECT FROM\n");}  
+		opt_orderby 												{printf("SELECT FROM\n"); 																		
+																	driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st);
+																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st) );
+																	if($2==NULL){
+																	  ((tree *)$$)->body.stmt.dtype=nodist;
+																	}else{
+																	  ((tree *)$$)->body.stmt.dtype=dist;																   
+																	}
+}  
 		;
 
 delete_statement:
@@ -170,31 +180,26 @@ select_expr_di_list: select_expr_list								{printf("select_expr_list\n");}
 		| '*'														{printf("*\n");}
 		;
 
-select_expr_list: select_expr 
-		| select_expr_list ',' select_expr							{printf(",\n");}										
-		;
-
-select_expr: expr													{printf("expr\n");}
+select_expr_list: expr 
+		| select_expr_list ',' expr									{printf(",\n");}										
 		;
 
 expr: 
 		atom														{printf("atom\n");}	 
-		| expr '+' expr												{printf("ADD\n");}
-		| expr '-' expr												{printf("SUB\n");}										
-		| expr '*' expr												{printf("MUL\n");}										 
-		| expr '/' expr												{printf("DIV\n");}										 
-		| expr AND expr												{printf("AND\n");}										 
-		| expr OR expr												{printf("OR\n");}										 
-		| NOT expr													{printf("NOT\n");}										 
-		| expr COMPARISON expr										{std::cout<<*$2;printf("COMP\n");}	
-		| '(' expr ')' 
+		| expr '+' expr												{printf("ADD\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"+",binary);} 
+		| expr '-' expr												{printf("SUB\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"-",binary);} 
+		| expr '*' expr												{printf("MUL\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"*",binary);} 
+		| expr '/' expr												{printf("DIV\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"/",binary);} 
+		| expr AND expr												{printf("AND\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"AND",binary);} 
+		| expr OR expr												{printf("OR\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"OR",binary);} 
+		| NOT expr													{printf("NOT\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$2,NULL,NULL,not);} 
+		| expr COMPARISON expr										{printf("COMP\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,*$2,binary);} 
+		| '(' expr ')'												{$$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$2,NULL,NULL,paren);} 
 		;
 
-table_references: table_reference								  
-		| table_references ',' table_reference						{printf(",\n");}
-		;
-
-table_reference: NAME												{std::cout<<*$1;std::cout<<"\n";}							   
+table_references: table								  
+		| table_references ',' table								{ $$=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)$1,table_ref);
+																	  $$=(SQLTree *)driver.calc.aSQLTree->append((tree *)$1,(tree *)$3,table_ref); }
 		;
 
 values_or_query_spec:
@@ -208,7 +213,7 @@ insert_atom_commalist:
 		;
 
 insert_atom:
-		atom														{printf("atom\n");}
+		atom														{printf("atom in insert_atom\n");}
 		| NULLX
 		;
 
@@ -229,48 +234,33 @@ column_commalist:
 		;
 
 opt_distinct:
-		/* empty */
-		| DISTINCT													{printf("DISTINCT");}
+		/* empty */													{$$=NULL;}
+		| DISTINCT													{$$=(SQLTree *)driver.calc.aSQLTree->make_stmt(NULL,NULL,NULL,NULL,select_st);}
 		;
 
 base_table_element:
-		column_def
+		column_ref INTEGER
+		| column_ref STR20
 		;
 
-atom:
-	literal										     {std::cout<<"literal";std::cout<<"\n";}							  
-	| INTNUM										 {std::cout<<$1;std::cout<<"\n";}							   
-	| column_ref									 {std::cout<<"column_ref";std::cout<<"\n";}							  
+atom: 
+	STRING										     {$$=(SQLTree *)driver.calc.aSQLTree->make_literal(*$1);}							  
+	| INTNUM										 {$$=(SQLTree *)driver.calc.aSQLTree->make_number($1);}							   
+	| column_ref									 {$$=$1;}							  
 	;
 
-column_def:
-		column_ref data_type
-		;
-
 column_ref: 
- 		NAME										{std::cout<<*$1;std::cout<<"\n";}							  
-		| NAME '.' NAME								{std::cout<<*$1<<"."<<*$3;std::cout<<"\n";}							   
+		NAME opt_column_ref							{printf("NAME");$$=(SQLTree *)driver.calc.aSQLTree->make_colref(*$1,(tree *)$2);}
 		;
 
 
-/* column_ref: */
-/*		NAME opt_column_ref				{printf("NAME\n");} */
-/*		; */
-/* opt_column_ref: */
-/*		|'.'NAME						{printf(".NAME\n");} */
-/*		; */
+
+opt_column_ref: /* empty*/							{$$=NULL;}
+		|'.'NAME									{printf(".NAME\n");$$=(SQLTree *)driver.calc.aSQLTree->make_variable(*$2);}
+		; 
 
 table:
 		NAME										{std::cout<<*$1;std::cout<<"\n";$$ = (SQLTree *)driver.calc.aSQLTree->make_variable(*$1);}							  									
-		;
-
-literal:
-		STRING										{std::cout<<*$1;std::cout<<"\n";}							  
-		;
-
-data_type:
-		INTEGER										{printf("INTEGER");}
-		| STR20										{printf("STR20");}
 		;
 
 
