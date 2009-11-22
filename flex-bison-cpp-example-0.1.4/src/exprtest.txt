@@ -1,1 +1,1 @@
-DROP TABLE aaa
+SELECT aaa,bbb FROM ccc

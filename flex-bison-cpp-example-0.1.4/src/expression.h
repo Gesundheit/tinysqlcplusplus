@@ -11,15 +11,34 @@
 #include <cmath>
 #include <stdlib.h>
 
-enum treetype {statement_node, number_node, variable_node};
+enum treetype {statement_node, number_node, variable_node, list_node, expr_node, literal_node, colref_node};
 enum stmttype {select_st, insert_st, delete_st, drop_st};
+enum exprtype {binary, atom, not, paren};
+enum listtype {table_ref, column, insert_atom, select};
+enum colrtype {str20, intnum};
+enum disttype {dist, nodist};
 typedef struct tree_t {
 	enum treetype nodetype;
 	union {
 		struct {
-			struct tree_t *arg1, *arg2, *arg3, *arg4, *arg5; 
+			struct tree_t *arg1, *arg2, *arg3, *arg4; 
+			enum disttype dtype;
 			enum stmttype type;
 		} stmt;
+		struct {
+			struct tree_t *arg1, *arg2;
+			enum listtype type;
+		}list;
+		struct {
+			struct tree_t *arg1, *arg2;
+			char *op;
+			enum exprtype type;
+		}expr;
+		struct {
+			char *arg1;
+			struct tree_t *arg2;
+			enum colrtype type;
+		}colref;
 		int number;
    	    char* variable;
 	} body;
@@ -28,36 +47,69 @@ typedef struct tree_t {
 class SQLTree{
 private:
 public:
-    int count;
-
     SQLTree(){
     }
 
-	//void make_stmt (tree *arg1, tree *arg2, tree *arg3, tree *arg4, tree *arg5, enum stmttype t) {
-        //printf(arg1->body.variable);
-
-		//root = new(tree);
-		//root->nodetype= statement_node;
-		//root->body.stmt.arg1= arg1;
-		//root->body.stmt.arg2= arg2;
-		//root->body.stmt.arg3= arg3;
-		//root->body.stmt.arg4= arg4;
-		//root->body.stmt.arg5= arg5;
-		//root->body.stmt.arg5= arg5;
-		//root->body.stmt.type= t;
-	//}
-
-	tree* make_stmt (tree *arg1, tree *arg2, tree *arg3, tree *arg4, tree *arg5, enum stmttype t) {
+	tree* make_stmt (tree *arg1, tree *arg2, tree *arg3, tree *arg4, enum stmttype t) {
 		tree* result = new(tree);
 		result->nodetype= statement_node;
 		result->body.stmt.arg1= arg1;
 		result->body.stmt.arg2= arg2;
 		result->body.stmt.arg3= arg3;
 		result->body.stmt.arg4= arg4;
-		result->body.stmt.arg5= arg5;
-		result->body.stmt.arg5= arg5;
 		result->body.stmt.type= t;
+		return result;
+	}
 
+	tree* make_expr (tree *l, tree *r, std::string v, enum exprtype t){
+
+		tree* result = new(tree);
+		result->nodetype=expr_node;
+		result->body.expr.arg1=l;
+		result->body.expr.arg2=r;
+		result->body.expr.type=t;
+		return result;
+	}
+
+	tree* make_colref(std::string arg1, tree* arg2){
+
+		tree* result = new(tree);
+		result->nodetype=colref_node;
+		size_t length = arg1.length();
+		if(length== 0){
+			printf("string should not be null\n");
+			result->body.colref.arg1="";
+		}else{
+			char* pBuf = new char[length+1];
+			arg1.copy(pBuf,length,0);
+			pBuf[length]='\0';
+			result->body.colref.arg1= pBuf;
+		} 
+		result->body.colref.arg2= arg2;
+		return result;
+	}
+
+	tree* append(tree *arg1, tree *arg2, enum listtype t){
+		tree* result = new(tree);
+		result->nodetype=list_node;
+		result->body.list.arg1=arg1;
+		result->body.list.arg2=arg2;
+		result->body.list.type=t;
+		return result;
+	}
+
+	tree* make_list(tree *arg1, enum listtype t){
+		tree* result = new(tree);
+		result->nodetype=list_node;
+		result->body.list.arg1=arg1;
+		result->body.list.type=t;
+		return result;
+	}
+
+	tree* make_number(int n){
+		tree* result = new(tree);
+		result->nodetype=number_node;
+		result->body.number=n;
 		return result;
 	}
 
@@ -79,8 +131,26 @@ public:
 		return result;
 	}
 
+	tree* make_literal (std::string l){
+		tree* result = new(tree);
+		result->nodetype=literal_node;
+		size_t length = l.length();
+		if(length== 0){
+			printf("string should not be null\n");
+			result->body.variable="";
+		}else{
+			char* pBuf = new char[length+1];
+			l.copy(pBuf,length,0);
+			pBuf[length]='\0';
+			result->body.variable= pBuf;
+		} 
+
+		return result;
+	}
+
+
+
 	void print_tree (tree *t,int level) {
-printf("here %d",count);
 		//int step =4;
 		//if (t!= NULL)
 		//	switch (t->nodetype)

@@ -29,7 +29,9 @@ namespace example {
 		parser.set_debug_level(trace_parsing);
 		r = (parser.parse() == 0);
 
-//test the condition here
+//Observe the tree here by setting break
+
+
 		return r;
 	}
 
