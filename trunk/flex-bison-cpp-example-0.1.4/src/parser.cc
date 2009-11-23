@@ -439,11 +439,11 @@ namespace example
 																	driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(7) - (3)].tree_s),(tree *)(yysemantic_stack_[(7) - (5)].tree_s),(tree *)(yysemantic_stack_[(7) - (6)].tree_s),(tree *)(yysemantic_stack_[(7) - (7)].tree_s),select_st);
 																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(7) - (3)].tree_s),(tree *)(yysemantic_stack_[(7) - (5)].tree_s),(tree *)(yysemantic_stack_[(7) - (6)].tree_s),(tree *)(yysemantic_stack_[(7) - (7)].tree_s),select_st) );
 																	if((yysemantic_stack_[(7) - (2)].tree_s)==NULL){
-																	/*  ((tree *)$$)->body.stmt.dtype=nodist; */
+																		(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_dist(NULL);
 																	}else{
-																	/*  ((tree *)$$)->body.stmt.dtype=dist;	*/															   
+																		(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_dist((tree *)(yysemantic_stack_[(7) - (2)].tree_s));																 													   
 																	}
-;}
+		;}
     break;
 
   case 11:

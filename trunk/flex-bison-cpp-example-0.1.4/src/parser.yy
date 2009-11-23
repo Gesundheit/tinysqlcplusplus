@@ -155,11 +155,11 @@ select_statement:
 																	driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st);
 																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st) );
 																	if($2==NULL){
-																	/*  ((tree *)$$)->body.stmt.dtype=nodist; */
+																		$$=(SQLTree *)driver.calc.aSQLTree->make_dist(NULL);
 																	}else{
-																	/*  ((tree *)$$)->body.stmt.dtype=dist;	*/															   
+																		$$=(SQLTree *)driver.calc.aSQLTree->make_dist((tree *)$2);																 													   
 																	}
-}  
+		}  
 		;
 
 delete_statement:
