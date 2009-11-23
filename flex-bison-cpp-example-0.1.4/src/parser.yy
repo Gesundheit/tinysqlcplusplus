@@ -153,6 +153,14 @@ select_statement:
 		opt_where  
 		opt_orderby 												{printf("SELECT FROM\n"); 																		
 																	driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st);
+                                                                    if($6==NULL){
+																	printf("6 is NULL");
+																	}else{
+																	
+                                                                    }
+                                                                    if($7==NULL){
+																	printf("7 is NULL");
+																	}
 																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st) );
 																	if($2==NULL){
 																		$$=(SQLTree *)driver.calc.aSQLTree->make_dist(NULL);
@@ -167,7 +175,7 @@ delete_statement:
 		;
 
 
-opt_where: /* empty */												
+opt_where: /* empty */												{$$=NULL;}
 		| WHERE expr												{printf("WHERE\n");}			
 		;
 

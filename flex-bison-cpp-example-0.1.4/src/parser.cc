@@ -437,6 +437,14 @@ namespace example
 #line 154 "parser.yy"
     {printf("SELECT FROM\n"); 																		
 																	driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(7) - (3)].tree_s),(tree *)(yysemantic_stack_[(7) - (5)].tree_s),(tree *)(yysemantic_stack_[(7) - (6)].tree_s),(tree *)(yysemantic_stack_[(7) - (7)].tree_s),select_st);
+                                                                    if((yysemantic_stack_[(7) - (6)].tree_s)==NULL){
+																	printf("6 is NULL");
+																	}else{
+																	
+                                                                    }
+                                                                    if((yysemantic_stack_[(7) - (7)].tree_s)==NULL){
+																	printf("7 is NULL");
+																	}
 																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(7) - (3)].tree_s),(tree *)(yysemantic_stack_[(7) - (5)].tree_s),(tree *)(yysemantic_stack_[(7) - (6)].tree_s),(tree *)(yysemantic_stack_[(7) - (7)].tree_s),select_st) );
 																	if((yysemantic_stack_[(7) - (2)].tree_s)==NULL){
 																		(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_dist(NULL);
@@ -447,169 +455,174 @@ namespace example
     break;
 
   case 11:
-#line 166 "parser.yy"
+#line 174 "parser.yy"
     {printf("DELETE FROM\n");;}
     break;
 
+  case 12:
+#line 178 "parser.yy"
+    {(yyval.tree_s)=NULL;;}
+    break;
+
   case 13:
-#line 171 "parser.yy"
+#line 179 "parser.yy"
     {printf("WHERE\n");;}
     break;
 
   case 15:
-#line 176 "parser.yy"
+#line 184 "parser.yy"
     {printf("ORDER BY\n");;}
     break;
 
   case 16:
-#line 179 "parser.yy"
+#line 187 "parser.yy"
     {printf("select_expr_list\n");;}
     break;
 
   case 17:
-#line 180 "parser.yy"
+#line 188 "parser.yy"
     {printf("*\n");;}
     break;
 
   case 19:
-#line 184 "parser.yy"
+#line 192 "parser.yy"
     {printf(",\n");;}
     break;
 
   case 20:
-#line 188 "parser.yy"
+#line 196 "parser.yy"
     {printf("atom\n");;}
     break;
 
   case 21:
-#line 189 "parser.yy"
+#line 197 "parser.yy"
     {printf("ADD\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"+",binary);;}
     break;
 
   case 22:
-#line 190 "parser.yy"
+#line 198 "parser.yy"
     {printf("SUB\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"-",binary);;}
     break;
 
   case 23:
-#line 191 "parser.yy"
+#line 199 "parser.yy"
     {printf("MUL\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"*",binary);;}
     break;
 
   case 24:
-#line 192 "parser.yy"
+#line 200 "parser.yy"
     {printf("DIV\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"/",binary);;}
     break;
 
   case 25:
-#line 193 "parser.yy"
+#line 201 "parser.yy"
     {printf("AND\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"AND",binary);;}
     break;
 
   case 26:
-#line 194 "parser.yy"
+#line 202 "parser.yy"
     {printf("OR\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"OR",binary);;}
     break;
 
   case 27:
-#line 195 "parser.yy"
+#line 203 "parser.yy"
     {printf("NOT\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(2) - (2)].tree_s),NULL,NULL,not);;}
     break;
 
   case 28:
-#line 196 "parser.yy"
+#line 204 "parser.yy"
     {printf("COMP\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),*(yysemantic_stack_[(3) - (2)].stringVal),binary);;}
     break;
 
   case 29:
-#line 197 "parser.yy"
+#line 205 "parser.yy"
     {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (2)].tree_s),NULL,NULL,paren);;}
     break;
 
   case 31:
-#line 201 "parser.yy"
+#line 209 "parser.yy"
     { (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)(yysemantic_stack_[(3) - (1)].tree_s),table_ref);
 																	  (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->append((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),table_ref); ;}
     break;
 
   case 32:
-#line 206 "parser.yy"
+#line 214 "parser.yy"
     {printf("VALUES\n");;}
     break;
 
   case 33:
-#line 207 "parser.yy"
+#line 215 "parser.yy"
     {printf("SELECT\n");;}
     break;
 
   case 35:
-#line 212 "parser.yy"
+#line 220 "parser.yy"
     {printf(",");;}
     break;
 
   case 36:
-#line 216 "parser.yy"
+#line 224 "parser.yy"
     {printf("atom in insert_atom\n");;}
     break;
 
   case 38:
-#line 221 "parser.yy"
+#line 229 "parser.yy"
     {printf(",\n");;}
     break;
 
   case 43:
-#line 233 "parser.yy"
+#line 241 "parser.yy"
     {printf(",\n");;}
     break;
 
   case 44:
-#line 237 "parser.yy"
+#line 245 "parser.yy"
     {(yyval.tree_s)=NULL;;}
     break;
 
   case 45:
-#line 238 "parser.yy"
+#line 246 "parser.yy"
     {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_stmt(NULL,NULL,NULL,NULL,select_st);;}
     break;
 
   case 48:
-#line 247 "parser.yy"
+#line 255 "parser.yy"
     {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_literal(*(yysemantic_stack_[(1) - (1)].stringVal));;}
     break;
 
   case 49:
-#line 248 "parser.yy"
+#line 256 "parser.yy"
     {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_number((yysemantic_stack_[(1) - (1)].integerVal));;}
     break;
 
   case 50:
-#line 249 "parser.yy"
+#line 257 "parser.yy"
     {(yyval.tree_s)=(yysemantic_stack_[(1) - (1)].tree_s);;}
     break;
 
   case 51:
-#line 253 "parser.yy"
+#line 261 "parser.yy"
     {printf("NAME");(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_colref(*(yysemantic_stack_[(2) - (1)].stringVal),(tree *)(yysemantic_stack_[(2) - (2)].tree_s));;}
     break;
 
   case 52:
-#line 258 "parser.yy"
+#line 266 "parser.yy"
     {(yyval.tree_s)=NULL;;}
     break;
 
   case 53:
-#line 259 "parser.yy"
+#line 267 "parser.yy"
     {printf(".NAME\n");(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_variable(*(yysemantic_stack_[(2) - (2)].stringVal));;}
     break;
 
   case 54:
-#line 263 "parser.yy"
+#line 271 "parser.yy"
     {std::cout<<*(yysemantic_stack_[(1) - (1)].stringVal);std::cout<<"\n";(yyval.tree_s) = (SQLTree *)driver.calc.aSQLTree->make_variable(*(yysemantic_stack_[(1) - (1)].stringVal));;}
     break;
 
 
     /* Line 675 of lalr1.cc.  */
-#line 613 "parser.cc"
+#line 626 "parser.cc"
 	default: break;
       }
     YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
@@ -1024,11 +1037,11 @@ namespace example
   Parser::yyrline_[] =
   {
          0,   128,   128,   129,   130,   131,   132,   136,   143,   147,
-     151,   166,   170,   171,   175,   176,   179,   180,   183,   184,
-     188,   189,   190,   191,   192,   193,   194,   195,   196,   197,
-     200,   201,   206,   207,   211,   212,   216,   217,   221,   222,
-     225,   227,   232,   233,   237,   238,   242,   243,   247,   248,
-     249,   253,   258,   259,   263
+     151,   174,   178,   179,   183,   184,   187,   188,   191,   192,
+     196,   197,   198,   199,   200,   201,   202,   203,   204,   205,
+     208,   209,   214,   215,   219,   220,   224,   225,   229,   230,
+     233,   235,   240,   241,   245,   246,   250,   251,   255,   256,
+     257,   261,   266,   267,   271
   };
 
   // Print the state stack on the debug stream.
@@ -1118,7 +1131,7 @@ namespace example
 
 } // namespace example
 
-#line 274 "parser.yy"
+#line 282 "parser.yy"
  /*** Additional Code ***/
 
 void example::Parser::error(const Parser::location_type& l,
