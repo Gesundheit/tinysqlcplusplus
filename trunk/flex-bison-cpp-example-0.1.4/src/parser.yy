@@ -189,7 +189,7 @@ opt_orderby: /* empty */											{$$=NULL;}
 		;
 
 select_expr_di_list: select_expr_list								{printf("select_expr_list\n");$$=$1;}
-		| '*'														{printf("*\n");}
+		| '*'														{printf("*\n");$$ = (SQLTree *)driver.calc.aSQLTree->make_variable("*");}
 		;
 
 select_expr_list: expr												{ $$=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)$1,select); }
