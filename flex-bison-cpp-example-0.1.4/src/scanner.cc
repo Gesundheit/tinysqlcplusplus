@@ -396,8 +396,8 @@ typedef unsigned char YY_CHAR;
 	(yy_c_buf_p) = yy_cp;
 
 /* %% [4.0] data tables for the DFA and the user's section 1 definitions go here */
-#define YY_NUM_RULES 29
-#define YY_END_OF_BUFFER 30
+#define YY_NUM_RULES 30
+#define YY_END_OF_BUFFER 31
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -407,9 +407,9 @@ struct yy_trans_info
 	};
 static yyconst flex_int16_t yy_accept[96] =
     {   0,
-        0,    0,   30,   28,   27,   29,   28,   23,   25,   21,
-       20,   22,   28,   28,   28,   28,   28,   28,   28,   28,
-       28,   28,   28,   28,   24,   27,    0,   26,   25,    0,
+        0,    0,   31,   29,   27,   28,   29,   23,   25,   21,
+       20,   22,   29,   29,   29,   29,   29,   29,   29,   29,
+       29,   29,   29,   29,   24,   27,    0,   26,   25,    0,
         2,    0,    0,    0,    0,    0,    0,    0,    0,   14,
         0,    0,    0,    0,    0,   24,    1,    0,    0,    0,
         0,    0,    0,    9,   11,    0,    0,    0,    0,    0,
@@ -530,11 +530,11 @@ static yyconst flex_int16_t yy_chk[150] =
        95,   95,   95,   95,   95,   95,   95,   95,   95
     } ;
 
-static yyconst flex_int16_t yy_rule_linenum[29] =
+static yyconst flex_int16_t yy_rule_linenum[30] =
     {   0,
        62,   63,   64,   65,   66,   67,   68,   69,   70,   71,
        72,   73,   74,   75,   76,   77,   78,   79,   80,   82,
-       83,   84,   86,   88,   89,   91,   93,   95
+       83,   84,   86,   88,   89,   91,   93,   96,  102
     } ;
 
 /* The intent behind this definition is that it'll catch
@@ -834,12 +834,12 @@ do_action:	/* This label is used only to access EOF actions. */
 			{
 			if ( yy_act == 0 )
 				std::cerr << "--scanner backing up\n";
-			else if ( yy_act < 29 )
+			else if ( yy_act < 30 )
 				std::cerr << "--accepting rule at line " << yy_rule_linenum[yy_act] <<
 				         "(\"" << yytext << "\")\n";
-			else if ( yy_act == 29 )
-				std::cerr << "--accepting default rule (\"" << yytext << "\")\n";
 			else if ( yy_act == 30 )
+				std::cerr << "--accepting default rule (\"" << yytext << "\")\n";
+			else if ( yy_act == 31 )
 				std::cerr << "--(end of buffer or a NUL)\n";
 			else
 				std::cerr << "--EOF (start condition " << YY_START << ")\n";
@@ -985,18 +985,28 @@ YY_RULE_SETUP
 #line 93 "scanner.ll"
 {yylloc->step();}
 	YY_BREAK
+/* gobble up end-of-lines */
 case 28:
+/* rule 28 can match eol */
 YY_RULE_SETUP
-#line 95 "scanner.ll"
+#line 96 "scanner.ll"
+{
+    yylloc->lines(yyleng); yylloc->step();
+    return token::EOL;
+}
+	YY_BREAK
+case 29:
+YY_RULE_SETUP
+#line 102 "scanner.ll"
 {return static_cast<token_type>(*yytext);}
 	YY_BREAK
 /*** END EXAMPLE - Change the example lexer rules above ***/
-case 29:
+case 30:
 YY_RULE_SETUP
-#line 98 "scanner.ll"
+#line 105 "scanner.ll"
 ECHO;
 	YY_BREAK
-#line 1000 "scanner.cc"
+#line 1010 "scanner.cc"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2045,7 +2055,7 @@ void Examplefree (void * ptr )
 
 /* %ok-for-header */
 
-#line 98 "scanner.ll"
+#line 105 "scanner.ll"
 
 
 
