@@ -523,7 +523,7 @@ namespace example
 
   case 21:
 #line 192 "parser.yy"
-    {printf("*\n");;}
+    {printf("*\n");(yyval.tree_s) = (SQLTree *)driver.calc.aSQLTree->make_variable("*");;}
     break;
 
   case 22:
