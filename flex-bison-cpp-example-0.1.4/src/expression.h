@@ -12,7 +12,7 @@
 #include <stdlib.h>
 
 enum treetype {statement_node, number_node, variable_node, list_node, expr_node, literal_node, colref_node};
-enum stmttype {select_st, insert_st, delete_st, drop_st};
+enum stmttype {select_st, insert_st, create_st, delete_st, drop_st};
 enum exprtype {binary, atom, not, paren};
 enum listtype {table_ref, column, insert_atom, select};
 enum colrtype {str20, intnum};
@@ -52,12 +52,17 @@ public:
 
 	tree* make_dist(tree *arg1){
 		tree* result = new (tree);
-		result->nodetype = statement_node;
+		result->nodetype = ((tree*)arg1)->nodetype;
 		if(arg1 == NULL){
 			result->body.stmt.dtype=nodist;
 		}else{
 			result->body.stmt.dtype=dist;
 		}
+		result->body.stmt.arg1 = arg1->body.stmt.arg1;
+		result->body.stmt.arg2 = arg1->body.stmt.arg2;
+		result->body.stmt.arg3 = arg1->body.stmt.arg3;
+		result->body.stmt.arg4 = arg1->body.stmt.arg4;
+		result->body.stmt.type = arg1->body.stmt.type;
 
 		return result;
 	}
