@@ -155,7 +155,8 @@ namespace example
      COMPARISON = 281,
      INTNUM = 282,
      NAME = 283,
-     STRING = 284
+     STRING = 284,
+     EOL = 285
    };
 
     };
@@ -250,7 +251,7 @@ namespace example
     static const unsigned char yytable_[];
     static const signed char yytable_ninf_;
 
-    static const signed char yycheck_[];
+    static const unsigned char yycheck_[];
 
     /// For a state, its accessing symbol.
     static const unsigned char yystos_[];

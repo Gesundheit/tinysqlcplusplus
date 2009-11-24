@@ -92,6 +92,13 @@ WHERE			return token::WHERE;
 
 [ \t\r]+			{yylloc->step();}
 
+ /* gobble up end-of-lines */
+\n {
+    yylloc->lines(yyleng); yylloc->step();
+    return token::EOL;
+}
+
+
 .					{return static_cast<token_type>(*yytext);}
  /*** END EXAMPLE - Change the example lexer rules above ***/
 

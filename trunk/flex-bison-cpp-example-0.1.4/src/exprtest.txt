@@ -1,1 +1,3 @@
+DROP TABLE ccc
+
 SELECT aa FROM bbb

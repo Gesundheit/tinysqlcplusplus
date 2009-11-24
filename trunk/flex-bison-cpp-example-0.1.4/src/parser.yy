@@ -97,6 +97,7 @@
 
 /*** BEGINNING OF USELESS BLOCK ***/
 %token			END	     0	"end of file"
+%token			EOL		"end of line"
 /*** END OF USELESS BLOCK ***/
 
 
@@ -123,6 +124,12 @@
 %% /*** Grammar Rules ***/
 
 /*** BEGIN DATABASE GRAMMAR ***/
+
+start: /* empty */
+		| start EOL													{}
+		| start statement EOL										{}
+		| start statement END										{}
+
 
 statement:
         create_table_statement											{$$ = $1;}							
@@ -155,20 +162,12 @@ select_statement:
 		FROM table_references 
 		opt_where  
 		opt_orderby 												{printf("SELECT FROM\n"); 																		
-																	driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st);
-                                                                    if($6==NULL){
-																	printf("6 is NULL\n");
-																	}else{
-																	
-                                                                    }
-                                                                    if($7==NULL){
-																	printf("7 is NULL\n");
-																	}
-																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st) );
+																	/* driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st); */
+
 																	if($2==NULL){
-																		/* $$=(SQLTree *)driver.calc.aSQLTree->make_dist(NULL); */
+																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st,false) );
 																	}else{
-																		/* $$=(SQLTree *)driver.calc.aSQLTree->make_dist((tree *)$$); */ 													   
+																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st,true) );
 																	}
 		}  
 		;
@@ -274,6 +273,8 @@ opt_column_ref: /* empty*/											{$$=NULL;}
 table:
 		NAME														{std::cout<<*$1;std::cout<<"\n";$$ = (SQLTree *)driver.calc.aSQLTree->make_variable(*$1);}							  									
 		;
+
+
 
 
 /*** END DATABASE GRAMMAR ***/

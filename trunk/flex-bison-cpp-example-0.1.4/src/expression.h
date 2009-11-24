@@ -50,20 +50,18 @@ public:
     SQLTree(){
     }
 
-	tree* make_dist(tree *arg1){
-		tree* result = new (tree);
-		result->nodetype = ((tree*)arg1)->nodetype;
-		if(arg1 == NULL){
-			result->body.stmt.dtype=nodist;
-		}else{
+	tree* make_stmt (tree *arg1, tree *arg2, tree *arg3, tree *arg4, enum stmttype t,bool dtype) {
+		tree* result = new(tree);
+		result->nodetype= statement_node;
+		result->body.stmt.arg1= arg1;
+		result->body.stmt.arg2= arg2;
+		result->body.stmt.arg3= arg3;
+		result->body.stmt.arg4= arg4;
+		result->body.stmt.type= t;
+		result->body.stmt.dtype=nodist;
+		if (dtype){
 			result->body.stmt.dtype=dist;
 		}
-		result->body.stmt.arg1 = arg1->body.stmt.arg1;
-		result->body.stmt.arg2 = arg1->body.stmt.arg2;
-		result->body.stmt.arg3 = arg1->body.stmt.arg3;
-		result->body.stmt.arg4 = arg1->body.stmt.arg4;
-		result->body.stmt.type = arg1->body.stmt.type;
-
 		return result;
 	}
 
