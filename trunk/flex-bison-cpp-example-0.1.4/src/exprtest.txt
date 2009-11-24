@@ -1,1 +1,1 @@
-SELECT aaa FROM ccc
+SELECT aa FROM bbb

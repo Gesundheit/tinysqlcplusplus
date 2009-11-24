@@ -125,26 +125,29 @@
 /*** BEGIN DATABASE GRAMMAR ***/
 
 statement:
-        create_table_statement											
-        | drop_table_statement											
-		| insert_statement											
-		| select_statement
-		| delete_statement
+        create_table_statement											{$$ = $1;}							
+        | drop_table_statement											{$$ = $1;}
+		| insert_statement												{$$ = $1;}
+		| select_statement												{$$ = $1;}
+		| delete_statement												{$$ = $1;}
 		;
 
 drop_table_statement:
 		DROP TABLE table												{printf("DROP TABLE\n");
-																		driver.calc.aSQLTree->make_stmt((tree *)$3,NULL,NULL,NULL,drop_st);
 																		driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,NULL,NULL,NULL,drop_st) );
 																		}
 		;
 
 create_table_statement:
-        CREATE TABLE table '(' base_table_element_commalist ')'			{printf("CREATE TABLE\n");}
+        CREATE TABLE table '(' base_table_element_commalist ')'			{printf("CREATE TABLE\n");																	   
+																		driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,NULL,NULL,create_st) );
+																		}
         ;
 
 insert_statement: 
- 		INSERT INTO table opt_column_commalist values_or_query_spec		{printf("INSERT INTO\n");} 
+ 		INSERT INTO table opt_column_commalist values_or_query_spec		{printf("INSERT INTO\n");
+																		driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$4,(tree *)$5,NULL,insert_st) );
+																		} 
  		; 
 
 select_statement:
@@ -154,42 +157,44 @@ select_statement:
 		opt_orderby 												{printf("SELECT FROM\n"); 																		
 																	driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st);
                                                                     if($6==NULL){
-																	printf("6 is NULL");
+																	printf("6 is NULL\n");
 																	}else{
 																	
                                                                     }
                                                                     if($7==NULL){
-																	printf("7 is NULL");
+																	printf("7 is NULL\n");
 																	}
 																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st) );
 																	if($2==NULL){
-																		$$=(SQLTree *)driver.calc.aSQLTree->make_dist(NULL);
+																		/* $$=(SQLTree *)driver.calc.aSQLTree->make_dist(NULL); */
 																	}else{
-																		$$=(SQLTree *)driver.calc.aSQLTree->make_dist((tree *)$2);																 													   
+																		/* $$=(SQLTree *)driver.calc.aSQLTree->make_dist((tree *)$$); */ 													   
 																	}
 		}  
 		;
 
 delete_statement:
-		DELETE FROM NAME opt_where									{printf("DELETE FROM\n");} 
+		DELETE FROM NAME opt_where									{printf("DELETE FROM\n");
+																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$4,NULL,NULL,delete_st) );
+} 
 		;
 
 
 opt_where: /* empty */												{$$=NULL;}
-		| WHERE expr												{printf("WHERE\n");}			
+		| WHERE expr												{printf("WHERE\n");$$=$2;}			
 		;
 
 
-opt_orderby: /* empty */											
-		| ORDER BY column_ref										{printf("ORDER BY\n");}			
+opt_orderby: /* empty */											{$$=NULL;}
+		| ORDER BY column_ref										{printf("ORDER BY\n");$$=$3;}			
 		;
 
-select_expr_di_list: select_expr_list								{printf("select_expr_list\n");}
+select_expr_di_list: select_expr_list								{printf("select_expr_list\n");$$=$1;}
 		| '*'														{printf("*\n");}
 		;
 
-select_expr_list: expr 
-		| select_expr_list ',' expr									{printf(",\n");}										
+select_expr_list: expr												{ $$=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)$1,select); }
+		| select_expr_list ',' expr									{$$=(SQLTree *)driver.calc.aSQLTree->append((tree *)$1,(tree *)$3,select);}										
 		;
 
 expr: 
@@ -205,40 +210,39 @@ expr:
 		| '(' expr ')'												{$$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$2,NULL,NULL,paren);} 
 		;
 
-table_references: table								  
-		| table_references ',' table								{ $$=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)$1,table_ref);
-																	  $$=(SQLTree *)driver.calc.aSQLTree->append((tree *)$1,(tree *)$3,table_ref); }
+table_references: table												{ $$=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)$1,table_ref); }
+		| table_references ',' table								{ $$=(SQLTree *)driver.calc.aSQLTree->append((tree *)$1,(tree *)$3,table_ref); }
 		;
 
 values_or_query_spec:
-		VALUES '(' insert_atom_commalist ')'						{printf("VALUES\n");}
-		| select_statement											{printf("SELECT\n");}
+		VALUES '(' insert_atom_commalist ')'						{printf("VALUES\n");$$=$3;}
+		| select_statement											{printf("SELECT\n");$$=$1;}
 		;
 
 insert_atom_commalist:
-		insert_atom
-		| insert_atom_commalist ',' insert_atom						{printf(",");}
+		insert_atom													{$$=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)$1,column);}
+		| insert_atom_commalist ',' insert_atom						{$$=(SQLTree *)driver.calc.aSQLTree->append((tree *)$1,(tree *)$3,column);}
 		;
 
 insert_atom:
-		atom														{printf("atom in insert_atom\n");}
-		| NULLX
+		atom														{printf("atom in insert_atom\n");$$=$1;}
+		| NULLX														{$$=NULL;}
 		;
 
 base_table_element_commalist:
-		base_table_element_commalist ',' base_table_element			{printf(",\n");}
-		| base_table_element										
+		base_table_element_commalist ',' base_table_element			{$$=(SQLTree *)driver.calc.aSQLTree->append((tree *)$1,(tree *)$3,column);}
+		| base_table_element										{$$=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)$1,column);}
 		;
 		
 opt_column_commalist:
-		/* empty */
-		| '(' column_commalist ')'
+		/* empty */													{$$=NULL;}
+		| '(' column_commalist ')'									{$$=$2;}
 		;
 
 
 column_commalist:
-		column_ref												   
-		| column_commalist ',' column_ref							{printf(",\n");}
+		column_ref												    {$$=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)$1,column);}
+		| column_commalist ',' column_ref							{printf(",\n");$$=(SQLTree *)driver.calc.aSQLTree->append((tree *)$1,(tree *)$3,column);}
 		;
 
 opt_distinct:
@@ -252,23 +256,23 @@ base_table_element:
 		;
 
 atom: 
-	STRING										     {$$=(SQLTree *)driver.calc.aSQLTree->make_literal(*$1);}							  
-	| INTNUM										 {$$=(SQLTree *)driver.calc.aSQLTree->make_number($1);}							   
-	| column_ref									 {$$=$1;}							  
+	STRING															{$$=(SQLTree *)driver.calc.aSQLTree->make_literal(*$1);}							  
+	| INTNUM														{$$=(SQLTree *)driver.calc.aSQLTree->make_number($1);}							   
+	| column_ref													{$$=$1;}							  
 	;
 
 column_ref: 
-		NAME opt_column_ref							{printf("NAME");$$=(SQLTree *)driver.calc.aSQLTree->make_colref(*$1,(tree *)$2);}
+		NAME opt_column_ref											{printf("NAME\n");$$=(SQLTree *)driver.calc.aSQLTree->make_colref(*$1,(tree *)$2);}
 		;
 
 
 
-opt_column_ref: /* empty*/							{$$=NULL;}
-		|'.'NAME									{printf(".NAME\n");$$=(SQLTree *)driver.calc.aSQLTree->make_variable(*$2);}
+opt_column_ref: /* empty*/											{$$=NULL;}
+		|'.'NAME													{printf(".NAME\n");$$=(SQLTree *)driver.calc.aSQLTree->make_variable(*$2);}
 		; 
 
 table:
-		NAME										{std::cout<<*$1;std::cout<<"\n";$$ = (SQLTree *)driver.calc.aSQLTree->make_variable(*$1);}							  									
+		NAME														{std::cout<<*$1;std::cout<<"\n";$$ = (SQLTree *)driver.calc.aSQLTree->make_variable(*$1);}							  									
 		;
 
 
