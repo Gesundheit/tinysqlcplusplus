@@ -173,7 +173,7 @@ select_statement:
 		;
 
 delete_statement:
-		DELETE FROM NAME opt_where									{printf("DELETE FROM\n");
+		DELETE FROM table opt_where									{printf("DELETE FROM\n");
 																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$4,NULL,NULL,delete_st) );
 } 
 		;
