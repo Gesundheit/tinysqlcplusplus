@@ -35,6 +35,13 @@ public:
     /// stream name (file or input stream) used for error messages.
     std::string streamname;
 
+    /** DB Project: run create statement, put schema into virtual.
+     * @param in	
+     * @param sname	
+     * @return		true if successfully put
+     */
+	bool run_create();
+
     /** Invoke the scanner and parser for a stream.
      * @param in	input stream
      * @param sname	stream name for error messages
@@ -77,6 +84,12 @@ public:
     /** Reference to the calculator context filled during parsing of the
      * expressions. */
     class CalcContext& calc;
+
+
+
+
+
+
 };
 
 } // namespace example

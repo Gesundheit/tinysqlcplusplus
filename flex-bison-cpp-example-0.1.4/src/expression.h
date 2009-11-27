@@ -87,7 +87,6 @@ public:
 	}
 
 	tree* make_colref(std::string arg1, tree* arg2){
-
 		tree* result = new(tree);
 		result->nodetype=colref_node;
 		size_t length = arg1.length();
@@ -161,6 +160,17 @@ public:
 		} 
 
 		return result;
+	}
+
+	tree* set_type(tree *arg1,char* v){
+		if(v == "i"){
+			arg1->body.colref.type=intnum;
+		}
+		if(v == "s"){
+			arg1->body.colref.type=str20;
+		}
+
+		return arg1;
 	}
 
 

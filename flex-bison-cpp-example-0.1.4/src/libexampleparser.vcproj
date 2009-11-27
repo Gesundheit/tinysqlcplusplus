@@ -189,6 +189,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\StorageManager.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\StorageManager.h"
+			>
+		</File>
+		<File
 			RelativePath=".\y.tab.h"
 			>
 		</File>

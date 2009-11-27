@@ -4,8 +4,16 @@
 #include <fstream>
 #include <sstream>
 
+#include<cstdlib>
+#include<string>
+
+
+using namespace std;
+
 #include "driver.h"
 #include "scanner.h"
+
+#include "StorageManager.h"
 
 namespace example {
 
@@ -18,6 +26,13 @@ namespace example {
 
 	bool Driver::parse_stream(std::istream& in, const std::string& sname)
 	{
+
+		// Initialize the memory and the schema manager
+		MainMemory mem;
+		cout << "The memory contains " << mem.getMemorySize() << " blocks" << endl << endl;
+		SchemaManager schemaMgr(&mem);
+
+
 		bool r = false;
 		streamname = sname;
 
@@ -29,11 +44,29 @@ namespace example {
 		parser.set_debug_level(trace_parsing);
 		r = (parser.parse() == 0);
 
-//Observe the tree here by setting break
+		run_create();
+		//Observe the tree here by setting break
+
+
+
+
+
 
 
 		return r;
 	}
+
+	bool Driver::run_create(){
+		printf("run create\n");
+
+		// Set time of write/read a block to 10ms
+		// Without setting, the default time is 10ms.
+		setDelay(10);
+
+
+		return true;
+	}
+
 
 	bool Driver::parse_file(const std::string &filename)
 	{

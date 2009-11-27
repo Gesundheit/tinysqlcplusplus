@@ -250,8 +250,8 @@ opt_distinct:
 		;
 
 base_table_element:
-		column_ref INTEGER
-		| column_ref STR20
+		column_ref INTEGER											{$$=(SQLTree *)driver.calc.aSQLTree->set_type((tree *)$1,"i");}
+		| column_ref STR20											{$$=(SQLTree *)driver.calc.aSQLTree->set_type((tree *)$1,"s");}
 		;
 
 atom: 
