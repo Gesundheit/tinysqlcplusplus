@@ -62,7 +62,7 @@ namespace example {
 
 	void Driver::operate_node(tree* node,char* op,vector<string> &fieldNames, vector<string> &fieldTypes){
 		if(node!=NULL){
-			if(node->body.list.arg2!=NULL){
+			if(node->body.list.arg2==NULL){
 				operate_node(node->body.list.arg1,op,fieldNames,fieldTypes);
 			}else{
 				operate_node(node->body.list.arg1,op,fieldNames,fieldTypes);
