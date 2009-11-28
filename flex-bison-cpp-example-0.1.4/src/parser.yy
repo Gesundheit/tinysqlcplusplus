@@ -86,7 +86,7 @@
 %left			OR	 "OR"
 %left			AND	 "AND"
 %left			NOT	 "NOT"
-%left <stringVal> COMPARISON	 "COMPARISON"
+%left '<' '>' '='
 %left '+' '-'
 %left '*' '/'
 
@@ -174,10 +174,8 @@ select_statement:
 
 delete_statement:
 		DELETE FROM table opt_where									{printf("DELETE FROM\n");
-																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$4,NULL,NULL,delete_st) );
-} 
+																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$4,NULL,NULL,delete_st) );} 
 		;
-
 
 opt_where: /* empty */												{$$=NULL;}
 		| WHERE expr												{printf("WHERE\n");$$=$2;}			
@@ -205,7 +203,9 @@ expr:
 		| expr AND expr												{printf("AND\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"AND",binary);} 
 		| expr OR expr												{printf("OR\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"OR",binary);} 
 		| NOT expr													{printf("NOT\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$2,NULL,NULL,not);} 
-		| expr COMPARISON expr										{printf("COMP\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,*$2,binary);} 
+		| expr '>' expr												{printf("COMP\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,">",binary);} 
+		| expr '<' expr												{printf("COMP\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"<",binary);} 
+		| expr '=' expr												{printf("COMP\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"=",binary);} 
 		| '(' expr ')'												{$$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$2,NULL,NULL,paren);} 
 		;
 
