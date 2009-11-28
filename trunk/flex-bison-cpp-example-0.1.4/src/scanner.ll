@@ -79,11 +79,7 @@ TABLE			return token::TABLE;
 VALUES			return token::VALUES;
 WHERE			return token::WHERE;
 
-"=" |
-"<"	|	   
-">"			{yylval->stringVal = new std::string(yytext, yyleng);return token::COMPARISON;}
-
-[-+*/:(),.;]		{return static_cast<token_type>(*yytext);}
+[-+*/:(),.;=<>]		{return static_cast<token_type>(*yytext);}
 
 [a-z][a-z0-9]*		{yylval->stringVal = new std::string(yytext, yyleng);return token::NAME;}
 [0-9]+				{yylval->integerVal = atoi(yytext);return token::INTNUM;}
