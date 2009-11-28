@@ -31,7 +31,7 @@ typedef struct tree_t {
 		}list;
 		struct {
 			struct tree_t *arg1, *arg2;
-			char *op;
+			char* op;
 			enum exprtype type;
 		}expr;
 		struct {
@@ -78,13 +78,11 @@ printf("make stmt non-select called\n");
 		if(result->body.stmt.arg1->nodetype==variable_node){
 printf("arg1 var_node\n");
 		}
-		if(result->body.stmt.arg2->nodetype==colref_node){
+		if(result->body.stmt.arg2!=NULL && result->body.stmt.arg2->nodetype==colref_node){
 printf("arg2 calref_node\n");
 		}else{
 printf("arg2 list_node\n");
 		}
-
-
 		result->body.stmt.arg3= arg3;
 		result->body.stmt.arg4= arg4;
 		result->body.stmt.type= t;
@@ -98,6 +96,18 @@ printf("arg2 list_node\n");
 		result->body.expr.arg1=l;
 		result->body.expr.arg2=r;
 		result->body.expr.type=t;
+		if(t==binary){
+			size_t length = v.length();
+			if(length== 0){
+				printf("operator should not be null\n");
+				result->body.expr.op="";
+			}else{
+				char* pBuf = new char[length+1];
+				v.copy(pBuf,length,0);
+				pBuf[length]='\0';
+				result->body.expr.op=pBuf;
+			} 
+		}
 		return result;
 	}
 
