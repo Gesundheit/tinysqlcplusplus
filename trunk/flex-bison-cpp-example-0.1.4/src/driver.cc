@@ -44,24 +44,82 @@ namespace example {
 		parser.set_debug_level(trace_parsing);
 		r = (parser.parse() == 0);
 
-		run_create();
+		int stmtNo=0;
+		for(stmtNo=0;stmtNo<calc.stmt_vector.size();stmtNo++){
+			switch (calc.stmt_vector[0]->body.stmt.type){
+				case create_st:{
+					run_create(stmtNo,schemaMgr);
+					break;
+							   }
+			}
+		}
+
+
 		//Observe the tree here by setting break
-
-
-
-
-
-
 
 		return r;
 	}
 
-	bool Driver::run_create(){
-		printf("run create\n");
+	void Driver::operate_node(tree* node,char* op,vector<string> &fieldNames, vector<string> &fieldTypes){
+		if(node!=NULL){
+			if(node->body.list.arg2!=NULL){
+				operate_node(node->body.list.arg1,op,fieldNames,fieldTypes);
+			}else{
+				operate_node(node->body.list.arg1,op,fieldNames,fieldTypes);
+				operate_node(node->body.list.arg2,op,fieldNames,fieldTypes);
+			}
+		}
+
+
+		//if(node != NULL && node->nodetype==colref_node){
+		//	fieldNames.push_back(string(node->body.colref.arg1));
+		//	if(node->body.colref.type==str20){
+		//		fieldTypes.push_back(string("STR20"));
+		//	}else if(node->body.colref.type==intnum){
+		//		fieldTypes.push_back(string("INT"));
+		//	}
+		//}else{
+		//	printf("list in operate_node\n");
+		//	operate_node(node->body.list.arg1,op,fieldNames,fieldTypes);
+		//}
+
+		return;
+
+	}
+
+	bool Driver::run_create(int stmtNo, SchemaManager schemaMgr){
+		printf("run_create called\n");
 
 		// Set time of write/read a block to 10ms
 		// Without setting, the default time is 10ms.
 		setDelay(10);
+		// Create a schema
+		vector<string> fieldNames;
+		vector<string> fieldTypes;
+		string relationName(calc.stmt_vector[stmtNo]->body.stmt.arg1->body.variable);
+
+		//if(calc.stmt_vector[stmtNo]->body.stmt.arg2->nodetype==list_node){
+		//	printf("list in run_create\n");
+		//}else{
+		//	printf("colref in run_create\n");
+		//}
+
+		operate_node(calc.stmt_vector[stmtNo]->body.stmt.arg2,"c",fieldNames,fieldTypes);
+
+		//printf("fn size %d\n",fieldNames.size());
+		//printf("ft size %d\n",fieldTypes.size());
+
+		if(fieldNames.size() == 0){
+			printf("Cannot create a relation with zero fields");
+		}else{
+			Schema schema(fieldNames,fieldTypes);
+			// Print the information about the schema
+			schema.printSchema();
+			cout << "The schema has " << schema.getNumOfFields() << " fields" << endl;
+			cout << "The schema has " << schema.getNumOfInt() << " integers" << endl;
+			cout << "The schema has " << schema.getNumOfString() << " strings" << endl;
+			cout << "The schema allows " << schema.getTuplesPerBlock() << " tuples per block" << endl;
+		}
 
 
 		return true;

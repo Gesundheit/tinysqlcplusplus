@@ -52,6 +52,8 @@ public:
 
 	tree* make_stmt (tree *arg1, tree *arg2, tree *arg3, tree *arg4, enum stmttype t,bool dtype) {
 		tree* result = new(tree);
+printf("make stmt select called\n");
+
 		result->nodetype= statement_node;
 		result->body.stmt.arg1= arg1;
 		result->body.stmt.arg2= arg2;
@@ -66,10 +68,23 @@ public:
 	}
 
 	tree* make_stmt (tree *arg1, tree *arg2, tree *arg3, tree *arg4, enum stmttype t) {
+printf("make stmt non-select called\n");
+
 		tree* result = new(tree);
 		result->nodetype= statement_node;
 		result->body.stmt.arg1= arg1;
 		result->body.stmt.arg2= arg2;
+
+		if(result->body.stmt.arg1->nodetype==variable_node){
+printf("arg1 var_node\n");
+		}
+		if(result->body.stmt.arg2->nodetype==colref_node){
+printf("arg2 calref_node\n");
+		}else{
+printf("arg2 list_node\n");
+		}
+
+
 		result->body.stmt.arg3= arg3;
 		result->body.stmt.arg4= arg4;
 		result->body.stmt.type= t;
@@ -113,6 +128,7 @@ public:
 	}
 
 	tree* make_list(tree *arg1, enum listtype t){
+printf("make_list called\n");
 		tree* result = new(tree);
 		result->nodetype=list_node;
 		result->body.list.arg1=arg1;

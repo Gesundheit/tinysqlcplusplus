@@ -7,6 +7,9 @@
 #include <string>
 #include <vector>
 
+#include "StorageManager.h"
+#include "expression.h"
+
 // forward declaration
 class CalcContext;
 
@@ -36,11 +39,19 @@ public:
     std::string streamname;
 
     /** DB Project: run create statement, put schema into virtual.
-     * @param in	
-     * @param sname	
+     * @param node
+     * @param 
+     * @return		
+     */
+	void operate_node(tree* node,char* op,vector<string> &fieldNames,vector<string> &fieldValues);
+
+
+    /** DB Project: run create statement, put schema into virtual.
+     * @param stmtNo	
+     * @param schemaMgr
      * @return		true if successfully put
      */
-	bool run_create();
+	bool run_create(int stmtNo, SchemaManager schemaMgr);
 
     /** Invoke the scanner and parser for a stream.
      * @param in	input stream

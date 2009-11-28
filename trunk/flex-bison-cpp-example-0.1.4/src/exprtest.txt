@@ -1,3 +1,1 @@
-DROP TABLE ccc
-
-CREATE TABLE project(programgrade STR20, reportgrade STR20)
+CREATE TABLE aaa ( student STR20,id INT, addr STR20, age INT)
