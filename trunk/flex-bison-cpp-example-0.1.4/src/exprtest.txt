@@ -1,1 +1,1 @@
-CREATE TABLE aaa ( student STR20,id INT, addr STR20, age INT)
+CREATE TABLE aaa ( student STR20, id INT, addr STR20)
