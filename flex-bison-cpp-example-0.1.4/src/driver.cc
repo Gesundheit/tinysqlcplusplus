@@ -61,12 +61,33 @@ namespace example {
 	}
 
 	void Driver::operate_node(tree* node,char* op,vector<string> &fieldNames, vector<string> &fieldTypes){
+
 		if(node!=NULL){
-			if(node->body.list.arg2==NULL){
-				operate_node(node->body.list.arg1,op,fieldNames,fieldTypes);
+			if(node->body.list.arg1==NULL && node->body.list.arg2==NULL){
+				return;
+			}
+			else if(node->body.list.arg2==NULL){
+				printf("insert here\n");
+//printf("%s\n",node->body.list.arg1->body.colref.arg1);
+				fieldNames.push_back( string((const char*)node->body.list.arg1->body.colref.arg1) );
+				if( node->body.list.arg1->body.colref.type==str20 ){
+					printf("STR20\n");
+					fieldTypes.push_back(string("STR20"));
+				}else{
+					printf("INT\n");
+					fieldTypes.push_back(string("INT"));
+				}			   
 			}else{
-				operate_node(node->body.list.arg1,op,fieldNames,fieldTypes);
-				operate_node(node->body.list.arg2,op,fieldNames,fieldTypes);
+
+				operate_node(node->body.list.arg1,op,fieldNames,fieldTypes);			
+				fieldNames.push_back( string((const char*)node->body.list.arg2->body.colref.arg1) );
+				if( node->body.list.arg1->body.colref.type==str20 ){
+					printf("STR20\n");
+					fieldTypes.push_back(string("STR20"));
+				}else{
+					printf("INT\n");
+					fieldTypes.push_back(string("INT"));
+				}			   
 			}
 		}
 
@@ -82,9 +103,6 @@ namespace example {
 		//	printf("list in operate_node\n");
 		//	operate_node(node->body.list.arg1,op,fieldNames,fieldTypes);
 		//}
-
-		return;
-
 	}
 
 	bool Driver::run_create(int stmtNo, SchemaManager schemaMgr){

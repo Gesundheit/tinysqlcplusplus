@@ -74,15 +74,6 @@ printf("make stmt non-select called\n");
 		result->nodetype= statement_node;
 		result->body.stmt.arg1= arg1;
 		result->body.stmt.arg2= arg2;
-
-		if(result->body.stmt.arg1->nodetype==variable_node){
-printf("arg1 var_node\n");
-		}
-		if(result->body.stmt.arg2!=NULL && result->body.stmt.arg2->nodetype==colref_node){
-printf("arg2 calref_node\n");
-		}else{
-printf("arg2 list_node\n");
-		}
 		result->body.stmt.arg3= arg3;
 		result->body.stmt.arg4= arg4;
 		result->body.stmt.type= t;
@@ -114,17 +105,25 @@ printf("arg2 list_node\n");
 	tree* make_colref(std::string arg1, tree* arg2){
 		tree* result = new(tree);
 		result->nodetype=colref_node;
-		size_t length = arg1.length();
-		if(length== 0){
-			printf("string should not be null\n");
-			result->body.colref.arg1="";
-		}else{
-			char* pBuf = new char[length+1];
-			arg1.copy(pBuf,length,0);
-			pBuf[length]='\0';
-			result->body.colref.arg1= pBuf;
-		} 
-		result->body.colref.arg2= arg2;
+
+		char *cstr;
+		cstr=new char[arg1.size()+1];
+		strcpy(cstr,arg1.c_str());
+		result->body.colref.arg1=cstr;
+		result->body.colref.arg2=arg2;
+
+		//int length = arg1.length();
+		//result->body.colref.arg1=NULL;
+		//if(length== 0){
+		//	printf("string should not be null\n");
+		//	result->body.colref.arg1=NULL;
+		//}else{
+		//	char* pBuf = new char[length+1];
+		//	arg1.copy(pBuf,length,0);
+		//	pBuf[length]='\0';
+		//	result->body.colref.arg1= pBuf;
+		//} 
+		//result->body.colref.arg2= arg2;
 		return result;
 	}
 
@@ -138,11 +137,11 @@ printf("arg2 list_node\n");
 	}
 
 	tree* make_list(tree *arg1, enum listtype t){
-printf("make_list called\n");
 		tree* result = new(tree);
 		result->nodetype=list_node;
 		result->body.list.arg1=arg1;
 		result->body.list.type=t;
+		result->body.list.arg2=NULL;
 		return result;
 	}
 
@@ -150,6 +149,7 @@ printf("make_list called\n");
 		tree* result = new(tree);
 		result->nodetype=number_node;
 		result->body.number=n;
+		result->body.variable=NULL;
 		return result;
 	}
 
@@ -160,7 +160,7 @@ printf("make_list called\n");
 		size_t length = v.length();
 		if(length== 0){
 			printf("string should not be null\n");
-			result->body.variable="";
+			result->body.variable=NULL;
 		}else{
 			char* pBuf = new char[length+1];
 			v.copy(pBuf,length,0);
@@ -177,7 +177,7 @@ printf("make_list called\n");
 		size_t length = l.length();
 		if(length== 0){
 			printf("string should not be null\n");
-			result->body.variable="";
+			result->body.variable=NULL;
 		}else{
 			char* pBuf = new char[length+1];
 			l.copy(pBuf,length,0);
