@@ -44,6 +44,11 @@ typedef struct tree_t {
 	} body;
 } tree;
 
+typedef struct colomn_ref_t {
+	char *table_name;
+	char *column_name;
+}column_ref;
+
 class SQLTree{
 private:
 public:
