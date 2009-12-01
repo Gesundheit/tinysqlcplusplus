@@ -53,6 +53,13 @@ public:
      */
 	bool run_create(int stmtNo, SchemaManager schemaMgr);
 
+	/** DB Project: run select statement, put schema into virtual.
+     * @param stmtNo	
+     * @param schemaMgr
+     * @return		true if successfully executed
+     */
+	bool run_select(int stmtNo, SchemaManager schemaMgr);
+
     /** Invoke the scanner and parser for a stream.
      * @param in	input stream
      * @param sname	stream name for error messages
