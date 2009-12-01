@@ -190,8 +190,8 @@ select_expr_di_list: select_expr_list								{printf("select_expr_list\n");$$=$1
 		| '*'														{printf("*\n");$$ = (SQLTree *)driver.calc.aSQLTree->make_variable("*");}
 		;
 
-select_expr_list: expr												{ $$=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)$1,select); }
-		| select_expr_list ',' expr									{$$=(SQLTree *)driver.calc.aSQLTree->append((tree *)$1,(tree *)$3,select);}										
+select_expr_list: column_ref										{ $$=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)$1,select); }
+		| select_expr_list ',' column_ref							{$$=(SQLTree *)driver.calc.aSQLTree->append((tree *)$1,(tree *)$3,select);}										
 		;
 
 expr: 
