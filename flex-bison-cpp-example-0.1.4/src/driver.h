@@ -44,6 +44,14 @@ public:
      * @return		
      */
 	void operate_node(tree* node,char* op,vector<string> &fieldNames,vector<string> &fieldValues);
+	void create_by_node(tree* node,vector<string> &fieldNames,vector<string> &fieldValues);
+
+    /** DB Project: run insert statement, put schema into virtual.
+     * @param node
+     * @param 
+     * @return		
+     */
+	void insert_by_node(tree* node);
 
 
     /** DB Project: run create statement, put schema into virtual.
@@ -51,7 +59,15 @@ public:
      * @param schemaMgr
      * @return		true if successfully put
      */
-	bool run_create(int stmtNo, SchemaManager schemaMgr);
+	bool run_create(int stmtNo, SchemaManager &schemaMgr);
+
+    /** DB Project: run insert statement, put schema into virtual.
+     * @param stmtNo	
+     * @param schemaMgr
+     * @return		true if successfully put
+     */
+	bool Driver::run_insert(int stmtNo, SchemaManager &schemaMgr, MainMemory &mem);
+
 
 	/** DB Project: run select statement, put schema into virtual.
      * @param stmtNo	
@@ -104,9 +120,10 @@ public:
     class CalcContext& calc;
 
 
-
-
-
+	/**
+	* DB project used from TA's library
+	* 
+	*/
 
 };
 
