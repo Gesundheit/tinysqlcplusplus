@@ -50,7 +50,11 @@ namespace example {
 				case create_st:{
 					run_create(stmtNo,schemaMgr);
 					break;
-							   }
+				}
+				case select_st:{
+					run_select(stmtNo,schemaMgr);
+					break;
+				}
 			}
 		}
 
@@ -142,6 +146,69 @@ namespace example {
 
 		return true;
 	}
+
+	bool Driver::run_select(int stmtNo, SchemaManager schemaMgr){
+		vector<string> relations;
+		tree *relation_list = (tree*)calc.stmt_vector[stmtNo]->body.stmt.arg2->body.list.arg1;
+	    tree *relation      = (tree*)calc.stmt_vector[stmtNo]->body.stmt.arg2->body.list.arg2;
+		while(relation!=NULL){
+			relations.push_back(relation->body.variable);	
+			cout<<"relation: "<<relation->body.variable<<endl;
+			if(relation_list->nodetype==variable_node){
+				break;
+			}
+			relation = relation_list->body.list.arg2;
+			relation_list = relation_list->body.list.arg1;
+			
+		}
+		relations.push_back(relation_list->body.variable);	
+		cout<<"relation: "<<relation_list->body.variable<<endl;
+			
+		if(calc.stmt_vector[stmtNo]->body.stmt.arg3!=NULL){
+			//parse expressions;
+		}
+		else{
+			cout<<"No condition"<<endl;
+		}
+
+		vector<column_ref> columns;
+		tree *columns_list = (tree*)calc.stmt_vector[stmtNo]->body.stmt.arg1->body.list.arg1;
+	    tree *column      = (tree*)calc.stmt_vector[stmtNo]->body.stmt.arg1->body.list.arg2;
+		column_ref cr;
+		while(column!=NULL){			
+			if(column->body.colref.arg2==NULL){
+				cr.column_name = column->body.colref.arg1;
+				cr.table_name = NULL;
+				cout<<"column: "<<cr.column_name<<endl;
+			}
+			else{
+				cr.column_name = column->body.colref.arg2->body.variable;
+				cr.table_name = column->body.colref.arg1;
+				cout<<"table.column: "<<cr.table_name<<"."<<cr.column_name<<endl;
+			}
+			columns.push_back(cr);	
+
+			if(columns_list->nodetype==colref_node){
+				break;
+			}
+			column = columns_list->body.list.arg2;
+			columns_list = columns_list->body.list.arg1;
+			
+		}
+		if(columns_list->body.colref.arg2==NULL){
+			cr.column_name = columns_list->body.colref.arg1;
+			cr.table_name = NULL;
+			cout<<"column: "<<cr.column_name<<endl;
+		}
+		else{
+			cr.column_name = columns_list->body.colref.arg2->body.variable;
+			cr.table_name = columns_list->body.colref.arg1;
+			cout<<"table.column: "<<cr.table_name<<"."<<cr.column_name<<endl;
+		}
+		columns.push_back(cr);	
+		return true;
+	}
+
 
 
 	bool Driver::parse_file(const std::string &filename)
