@@ -79,9 +79,9 @@
 %token			VALUES	 "VALUES"
 %token			WHERE	 "WHERE"
 %type <tree_s> table statement drop_table_statement insert_statement create_table_statement select_statement delete_statement
-%type <tree_s> opt_where opt_column_commalist opt_orderby opt_distinct  
+%type <tree_s> opt_where opt_column_commalist opt_orderby opt_distinct search_condition boolean_term boolean_factor boolean_primary comparison_predicate
 %type <tree_s> base_table_element_commalist  values_or_query_spec select_expr_di_list table_references select_expr_list
-%type <tree_s> expr atom column_ref opt_column_ref base_table_element column_commalist insert_atom_commalist insert_atom
+%type <tree_s> expr atom column_ref opt_column_ref base_table_element column_commalist insert_atom_commalist insert_atom term
 
 %left			OR	 "OR"
 %left			AND	 "AND"
@@ -178,7 +178,7 @@ delete_statement:
 		;
 
 opt_where: /* empty */												{$$=NULL;}
-		| WHERE expr												{printf("WHERE\n");$$=$2;}			
+		| WHERE search_condition									{printf("WHERE\n");$$=$2;}			
 		;
 
 
@@ -194,21 +194,36 @@ select_expr_list: column_ref										{ $$=(SQLTree *)driver.calc.aSQLTree->make
 		| select_expr_list ',' column_ref							{$$=(SQLTree *)driver.calc.aSQLTree->append((tree *)$1,(tree *)$3,select);}										
 		;
 
-expr: 
-		atom														{printf("atom\n");}	 
-		| expr '+' expr												{printf("ADD\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"+",binary);} 
-		| expr '-' expr												{printf("SUB\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"-",binary);} 
-		| expr '*' expr												{printf("MUL\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"*",binary);} 
-		| expr '/' expr												{printf("DIV\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"/",binary);} 
-		| expr AND expr												{printf("AND\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"AND",binary);} 
-		| expr OR expr												{printf("OR\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"OR",binary);} 
-		| NOT expr													{printf("NOT\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$2,NULL,NULL,not);} 
-		| expr '>' expr												{printf("COMP\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,">",binary);} 
-		| expr '<' expr												{printf("COMP\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"<",binary);} 
-		| expr '=' expr												{printf("COMP\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"=",binary);} 
-		| '(' expr ')'												{$$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$2,NULL,NULL,paren);} 
+search_condition: boolean_term										{$$=$1;}
+		| boolean_term OR search_condition							{printf("OR\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"OR",binary);} 
+		;
+boolean_term: boolean_factor 
+		| boolean_factor AND boolean_term							{printf("AND\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"AND",binary);} 
 		;
 
+boolean_factor: boolean_primary										{$$=$1;}
+		| NOT boolean_primary										{printf("NOT\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$2,NULL,NULL,not);} 
+		;
+
+boolean_primary: comparison_predicate								{$$=$1;}
+		| '(' search_condition ')'									{$$=$2;}
+		;
+comparison_predicate: 
+			expr '>' expr											{printf("COMP\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,">",binary);} 
+		|	expr '<' expr											{printf("COMP\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"<",binary);} 
+		|   expr '=' expr											{printf("COMP\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"=",binary);} 
+		;
+expr: 
+		term														{printf("atom\n");}	 
+		| expr '+' expr												{printf("ADD\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"+",binary);} 
+		| expr '-' expr												{printf("SUB\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"-",binary);} 
+		;
+
+term: 
+		atom
+		| atom '*' term												{printf("MUL\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"*",binary);} 
+		| atom '/' term												{printf("DIV\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$1,(tree *)$3,"/",binary);} 
+		;
 table_references: table												{ $$=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)$1,table_ref); }
 		| table_references ',' table								{ $$=(SQLTree *)driver.calc.aSQLTree->append((tree *)$1,(tree *)$3,table_ref); }
 		;
@@ -257,7 +272,8 @@ base_table_element:
 atom: 
 	STRING															{$$=(SQLTree *)driver.calc.aSQLTree->make_literal(*$1);}							  
 	| INTNUM														{$$=(SQLTree *)driver.calc.aSQLTree->make_number($1);}							   
-	| column_ref													{$$=$1;}							  
+	| column_ref													{$$=$1;}	
+	| '(' expr ')'													{$$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$2,NULL,NULL,paren);} 
 	;
 
 column_ref: 
