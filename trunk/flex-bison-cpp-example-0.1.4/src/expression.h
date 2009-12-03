@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <cmath>
 #include <stdlib.h>
+#include <string.h>
 
 enum treetype {statement_node, number_node, variable_node, list_node, expr_node, literal_node, colref_node};
 enum stmttype {select_st, insert_st, create_st, delete_st, drop_st};
@@ -54,6 +55,12 @@ typedef struct projection_t {
 	char *column_name;
 }projection;
 
+typedef struct atom_ref_t {
+	char *string_value;
+	int int_value;
+	enum treetype atom_type;
+}atom_ref;
+
 class SQLTree{
 private:
 public:
@@ -62,7 +69,6 @@ public:
 
 	tree* make_stmt (tree *arg1, tree *arg2, tree *arg3, tree *arg4, enum stmttype t,bool dtype) {
 		tree* result = new(tree);
-printf("make stmt select called\n");
 
 		result->nodetype= statement_node;
 		result->body.stmt.arg1= arg1;
@@ -78,7 +84,6 @@ printf("make stmt select called\n");
 	}
 
 	tree* make_stmt (tree *arg1, tree *arg2, tree *arg3, tree *arg4, enum stmttype t) {
-printf("make stmt non-select called\n");
 
 		tree* result = new(tree);
 		result->nodetype= statement_node;
@@ -156,6 +161,7 @@ printf("make stmt non-select called\n");
 	}
 
 	tree* make_number(int n){
+
 		tree* result = new(tree);
 		result->nodetype=number_node;
 		printf("------->%d",n);
