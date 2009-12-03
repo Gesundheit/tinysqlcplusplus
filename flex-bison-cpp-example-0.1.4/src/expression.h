@@ -45,9 +45,14 @@ typedef struct tree_t {
 } tree;
 
 typedef struct colomn_ref_t {
-	char *table_name;
+	char *relation_name;
 	char *column_name;
 }column_ref;
+
+typedef struct projection_t {
+	char *relation_name;
+	char *column_name;
+}projection;
 
 class SQLTree{
 private:
@@ -153,8 +158,8 @@ printf("make stmt non-select called\n");
 	tree* make_number(int n){
 		tree* result = new(tree);
 		result->nodetype=number_node;
+		printf("------->%d",n);
 		result->body.number=n;
-		result->body.variable=NULL;
 		return result;
 	}
 
