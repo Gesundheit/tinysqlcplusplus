@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+#include <string.h>
 
 #include "StorageManager.h"
 #include "expression.h"
@@ -45,13 +46,7 @@ public:
      */
 	void operate_node(tree* node,char* op,vector<string> &fieldNames,vector<string> &fieldValues);
 	void create_by_node(tree* node,vector<string> &fieldNames,vector<string> &fieldValues);
-
-    /** DB Project: run insert statement, put schema into virtual.
-     * @param node
-     * @param 
-     * @return		
-     */
-	void insert_by_node(tree* node);
+	void insert_by_node(tree* node,vector<string>& fieldNames,vector<atom_ref>& fieldValues,char* op);
 
 
     /** DB Project: run create statement, put schema into virtual.
@@ -66,7 +61,7 @@ public:
      * @param schemaMgr
      * @return		true if successfully put
      */
-	bool Driver::run_insert(int stmtNo, SchemaManager &schemaMgr, MainMemory &mem);
+	bool run_insert(int stmtNo, SchemaManager &schemaMgr, MainMemory &mem);
 
 
 	/** DB Project: run select statement, put schema into virtual.
