@@ -114,7 +114,6 @@ namespace example {
 	}
 
 	bool Driver::run_create(int stmtNo, SchemaManager &schemaMgr){
-
 		printf("run_create called\n");
 
 		// Create a schema
@@ -155,6 +154,24 @@ namespace example {
 		return true;
 	}
 
+	bool Driver::run_select(int stmtNo, SchemaManager &schemaMgr){
+		vector<string> *relations  = new vector<string>;
+		get_relations(stmtNo, relations);	
+
+		vector<column_ref> *columns  = new vector<column_ref>;
+		get_columns(stmtNo, columns);
+		
+		if(calc.stmt_vector[stmtNo]->body.stmt.arg3!=NULL){
+			//parse expressions
+
+		}
+		else{
+			cout<<"No condition"<<endl;
+		}
+
+		return true;
+	}
+	
 	bool Driver::run_insert(int stmtNo, SchemaManager &schemaMgr, MainMemory &mem){
 
 		// Always use memory_index 0 to insert, clear whatever is there
@@ -301,13 +318,11 @@ namespace example {
 		}
 
 	}
-
-	bool Driver::run_select(int stmtNo, SchemaManager schemaMgr){
-		vector<string> relations;
+	void Driver::get_relations(const int stmtNo, vector<string> *relations){
 		tree *relation_list = (tree*)calc.stmt_vector[stmtNo]->body.stmt.arg2->body.list.arg1;
 	    tree *relation      = (tree*)calc.stmt_vector[stmtNo]->body.stmt.arg2->body.list.arg2;
 		while(relation!=NULL){
-			relations.push_back(relation->body.variable);	
+			relations->push_back(relation->body.variable);	
 			cout<<"relation: "<<relation->body.variable<<endl;
 			if(relation_list->nodetype==variable_node){
 				break;
@@ -316,32 +331,27 @@ namespace example {
 			relation_list = relation_list->body.list.arg1;
 			
 		}
-		relations.push_back(relation_list->body.variable);	
+		relations->push_back(relation_list->body.variable);	
 		cout<<"relation: "<<relation_list->body.variable<<endl;
-			
-		if(calc.stmt_vector[stmtNo]->body.stmt.arg3!=NULL){
-			//parse expressions;
-		}
-		else{
-			cout<<"No condition"<<endl;
-		}
+		return;
+	}
 
-		vector<column_ref> columns;
+	void Driver::get_columns(const int stmtNo, vector<column_ref> *columns){
 		tree *columns_list = (tree*)calc.stmt_vector[stmtNo]->body.stmt.arg1->body.list.arg1;
 	    tree *column      = (tree*)calc.stmt_vector[stmtNo]->body.stmt.arg1->body.list.arg2;
 		column_ref cr;
 		while(column!=NULL){			
 			if(column->body.colref.arg2==NULL){
 				cr.column_name = column->body.colref.arg1;
-				cr.table_name = NULL;
+				cr.relation_name = NULL;
 				cout<<"column: "<<cr.column_name<<endl;
 			}
 			else{
 				cr.column_name = column->body.colref.arg2->body.variable;
-				cr.table_name = column->body.colref.arg1;
-				cout<<"table.column: "<<cr.table_name<<"."<<cr.column_name<<endl;
+				cr.relation_name = column->body.colref.arg1;
+				cout<<"table.column: "<<cr.relation_name<<"."<<cr.column_name<<endl;
 			}
-			columns.push_back(cr);	
+			columns->push_back(cr);	
 
 			if(columns_list->nodetype==colref_node){
 				break;
@@ -352,18 +362,29 @@ namespace example {
 		}
 		if(columns_list->body.colref.arg2==NULL){
 			cr.column_name = columns_list->body.colref.arg1;
-			cr.table_name = NULL;
+			cr.relation_name = NULL;
 			cout<<"column: "<<cr.column_name<<endl;
 		}
 		else{
 			cr.column_name = columns_list->body.colref.arg2->body.variable;
-			cr.table_name = columns_list->body.colref.arg1;
-			cout<<"table.column: "<<cr.table_name<<"."<<cr.column_name<<endl;
+			cr.relation_name = columns_list->body.colref.arg1;
+			cout<<"table.column: "<<cr.relation_name<<"."<<cr.column_name<<endl;
 		}
-		columns.push_back(cr);	
-		return true;
+		columns->push_back(cr);	
+		return;
+
 	}
 
+	void Driver::get_attribute_relations(vector<string> *total_relations, column_ref column, SchemaManager &schemaMgr, vector<string> *atr_relations){	
+		for (int i = 0; i < total_relations->size(); i++){
+			string relation_name = (*total_relations)[i];
+			Schema* rel_schema = schemaMgr.getSchema(relation_name);
+			int pos = rel_schema->getFieldPos(column.column_name);
+			if(pos!=-1){   /* field found in relation */
+				atr_relations->push_back(relation_name);
+			}
+		}
+	}
 
 
 	bool Driver::parse_file(const std::string &filename)
