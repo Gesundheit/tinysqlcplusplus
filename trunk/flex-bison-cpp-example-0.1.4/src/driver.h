@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+#include<list>
 #include <string.h>
 
 #include "StorageManager.h"
@@ -69,7 +70,7 @@ public:
      * @param schemaMgr
      * @return		true if successfully executed
      */
-	bool run_select(int stmtNo, SchemaManager schemaMgr);
+	bool run_select(int stmtNo, SchemaManager &schemaMgr);
 
     /** Invoke the scanner and parser for a stream.
      * @param in	input stream
@@ -105,6 +106,16 @@ public:
     /** General error handling. This can be modified to output the error
      * e.g. to a dialog box. */
     void error(const std::string& m);
+	
+	/** Rerurns a vector with the relations from the FROM body of a SELECT
+     * statement. */
+	void Driver::get_relations(const int stmtNo, vector<std::string> *relations);
+	
+	/** Rerurns a vector with the relations from the SELECT body of a SELECT
+     * statement. */
+	void Driver::get_columns(const int stmtNo, vector<column_ref> *columns);
+
+	void Driver::get_attribute_relations(vector<string> *total_relations, column_ref column,  SchemaManager &schemaMgr, vector<string> *atr_relations);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
