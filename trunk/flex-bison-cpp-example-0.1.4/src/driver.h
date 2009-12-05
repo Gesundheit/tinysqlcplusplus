@@ -48,7 +48,7 @@ public:
 	void operate_node(tree* node,char* op,vector<string> &fieldNames,vector<string> &fieldValues);
 	void create_by_node(tree* node,vector<string> &fieldNames,vector<string> &fieldValues);
 	void insert_by_node(tree* node,vector<string>& fieldNames,vector<atom_ref>& fieldValues,char* op);
-
+	vector<Tuple>* delete_by_node(tree* node,vector<Tuple>origSet);
 
     /** DB Project: run create statement, put schema into virtual.
      * @param stmtNo	
@@ -57,13 +57,21 @@ public:
      */
 	bool run_create(int stmtNo, SchemaManager &schemaMgr);
 
-    /** DB Project: run insert statement, put schema into virtual.
+    /** DB Project: run insert statement, add data into virtual disk.
      * @param stmtNo	
      * @param schemaMgr
+	 * @param mem
      * @return		true if successfully put
      */
 	bool run_insert(int stmtNo, SchemaManager &schemaMgr, MainMemory &mem);
 
+    /** DB Project: run delete statement, modify virtual disk.
+     * @param stmtNo	
+     * @param schemaMgr
+	 * @param mem
+     * @return		true if successfully put
+     */
+	bool run_delete(int stmtNo, SchemaManager &schemaMgr, MainMemory &mem);
 
 	/** DB Project: run select statement, put schema into virtual.
      * @param stmtNo	
