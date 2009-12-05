@@ -11,10 +11,12 @@
 #include <cmath>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 
 enum treetype {statement_node, number_node, variable_node, list_node, expr_node, literal_node, colref_node};
 enum stmttype {select_st, insert_st, create_st, delete_st, drop_st};
-enum exprtype {binary, atom, not, paren};
+enum exprtype {binary, not, paren};
+enum joinnode {nojoin, join};
 enum listtype {table_ref, column, insert_atom, select};
 enum colrtype {str20, intnum};
 enum disttype {dist, nodist};
@@ -32,7 +34,9 @@ typedef struct tree_t {
 		}list;
 		struct {
 			struct tree_t *arg1, *arg2;
+			struct join_node_t *j; 
 			char* op;
+			enum joinnode jtype;
 			enum exprtype type;
 		}expr;
 		struct {
@@ -45,15 +49,16 @@ typedef struct tree_t {
 	} body;
 } tree;
 
+
 typedef struct colomn_ref_t {
 	char *relation_name;
 	char *column_name;
 }column_ref;
 
-typedef struct projection_t {
-	char *relation_name;
-	char *column_name;
-}projection;
+typedef struct join_node_t {
+	std::vector<std::string> *arg1_relations;
+	std::vector<std::string> *arg2_relations;
+}join_n;
 
 typedef struct atom_ref_t {
 	char *string_value;
@@ -102,6 +107,7 @@ public:
 		result->body.expr.arg1=l;
 		result->body.expr.arg2=r;
 		result->body.expr.type=t;
+		result->body.expr.jtype=nojoin;
 		if(t==binary){
 			size_t length = v.length();
 			if(length== 0){
