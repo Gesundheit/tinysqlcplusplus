@@ -116,11 +116,12 @@ public:
 	void Driver::get_columns(vector<string> *total_relations,const int stmtNo, SchemaManager &schemaMgr, 
 							vector<column_ref> *columns, std::map<string,std::vector<column_ref>*> *attributes_to_project);
 	/** Returns a vector with the relations having a specific column */	
-	void Driver::get_attribute_relations(vector<string> *total_relations, column_ref column,  SchemaManager &schemaMgr, vector<string> *atr_relations);
+	void Driver::get_attribute_relations(vector<string> *total_relations, column_ref column,  SchemaManager &schemaMgr,
+								vector<string> *atr_relations);
 
 	/**Process the WHERE body of a select statement */	
 	void Driver::process_condition(vector<string> *total_relations, int stmtNo, SchemaManager &schemaMgr, tree* condition, 
-					std::map<string,std::vector<column_ref>*> *attributes_to_project, vector<string> *condition_relations);
+					std::map<string,std::vector<column_ref>*> *attributes_to_project, vector<string> *&condition_relations);
 
 	/**return the total size of the given relations */	
 	unsigned long Driver::relations_get_size(vector<string> *relations, SchemaManager &schemaMgr);
