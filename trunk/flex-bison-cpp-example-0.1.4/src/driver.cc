@@ -8,6 +8,7 @@
 #include<string>
 #include<string.h>
 #include <algorithm>
+#include <map>
 
 using namespace std;
 
@@ -71,7 +72,11 @@ namespace example {
 				case insert_st:{
 					run_insert(stmtNo,schemaMgr,mem);
 					break;
-				   }
+				}
+			   	case select_st:{
+					run_select(stmtNo,schemaMgr);
+					break;
+				}
 			}
 		}
 
@@ -156,19 +161,19 @@ namespace example {
 
 	bool Driver::run_select(int stmtNo, SchemaManager &schemaMgr){
 		vector<string> *relations  = new vector<string>;
-		get_relations(stmtNo, relations);	
+		std::map<string,std::vector<column_ref>*> *attributes_to_project = new std::map<string,std::vector<column_ref>*>;
+		get_relations(stmtNo, relations,attributes_to_project);	
 
 		vector<column_ref> *columns  = new vector<column_ref>;
-		get_columns(stmtNo, columns);
+		get_columns(relations,stmtNo, schemaMgr, columns, attributes_to_project);
 		
 		if(calc.stmt_vector[stmtNo]->body.stmt.arg3!=NULL){
-			//parse expressions
-
+			vector<string> *condition_relations = new vector<string>;
+			process_condition(relations, stmtNo, schemaMgr, calc.stmt_vector[stmtNo]->body.stmt.arg3, attributes_to_project, condition_relations);
 		}
 		else{
 			cout<<"No condition"<<endl;
 		}
-
 		return true;
 	}
 	
@@ -318,11 +323,94 @@ namespace example {
 		}
 
 	}
-	void Driver::get_relations(const int stmtNo, vector<string> *relations){
+
+	void Driver::process_condition(vector<string> *total_relations, int stmtNo, SchemaManager &schemaMgr, 
+									tree* condition,std::map<string,std::vector<column_ref>*> *attributes_to_project,
+									vector<string> *condition_relations){
+		vector<string> *condition_relations1 = new vector<string>;
+		vector<string> *condition_relations2 = new vector<string>;
+		if(condition->nodetype==binary) {
+			tree *arg1 = condition->body.expr.arg1;
+			tree *arg2 = condition->body.expr.arg2;
+			if(arg1->nodetype==colref_node) {
+				column_ref cr;
+				if(arg1->body.colref.arg2==NULL){						
+					cr.column_name = arg1->body.colref.arg1;	
+					(*attributes_to_project)[total_relations->front()]->push_back(cr);
+				}
+				else {
+					cr.column_name = arg1->body.colref.arg2->body.variable;
+					cr.relation_name = arg1->body.colref.arg1;
+					(*attributes_to_project)[cr.relation_name]->push_back(cr);
+				}
+				condition_relations1->push_back(cr.relation_name);
+			}
+			if(arg2->nodetype==colref_node) {
+				column_ref cr;
+				if(arg2->body.colref.arg2==NULL){						
+					cr.column_name = arg2->body.colref.arg1;	
+					(*attributes_to_project)[total_relations->front()]->push_back(cr);
+				}
+				else {
+					cr.column_name = arg2->body.colref.arg2->body.variable;
+					cr.relation_name = arg2->body.colref.arg1;
+					(*attributes_to_project)[cr.relation_name]->push_back(cr);
+				}
+				condition_relations2->push_back(cr.relation_name);
+			}
+			
+			if(arg1->nodetype==number_node || arg2->nodetype==number_node || arg2->nodetype==literal_node || arg1->nodetype==literal_node) {
+			} 
+			if(arg1->nodetype==expr_node) {
+				process_condition(total_relations, stmtNo, schemaMgr, condition->body.expr.arg1,attributes_to_project,condition_relations1);
+			}
+			if(arg2->nodetype==expr_node) {
+				process_condition(total_relations, stmtNo, schemaMgr, condition->body.expr.arg2,attributes_to_project,condition_relations2);
+			}	
+
+			if(condition_relations1->size()==0) {
+				condition_relations=condition_relations2;
+			}
+			else if(condition_relations2->size()==0) {
+				condition_relations=condition_relations1;
+			}
+			for(int i=0;i<condition_relations1->size(); i++) {
+				//find intersection
+				//find which relations will be joined TODO!!!!!
+				if((*condition_relations1)[0]!=(*condition_relations2)[0]){
+					condition->body.expr.jtype=join;
+					condition->body.expr.j->arg1_relations = condition_relations1;
+					condition->body.expr.j->arg2_relations = condition_relations2;
+				}
+			}
+
+			if(Driver::relations_get_size(condition_relations1,schemaMgr)> relations_get_size(condition_relations1,schemaMgr)){
+				//execute the right argument first.
+			}
+		
+		}
+		else if(condition->nodetype==paren) {
+		}
+		else if(condition->nodetype==not) {
+		}
+
+		return;
+	}
+
+	unsigned long Driver::relations_get_size(vector<string> *relations, SchemaManager &schemaMgr) {
+		long size=0;
+		for (int i = 0; i < relations->size(); i++){
+			size += schemaMgr.getRelation((*relations)[i])->getNumOfTuples();
+		}
+		return size;
+	}
+
+	void Driver::get_relations(const int stmtNo, vector<string> *relations, std::map<string,std::vector<column_ref>*> *attributes_to_project){
 		tree *relation_list = (tree*)calc.stmt_vector[stmtNo]->body.stmt.arg2->body.list.arg1;
 	    tree *relation      = (tree*)calc.stmt_vector[stmtNo]->body.stmt.arg2->body.list.arg2;
 		while(relation!=NULL){
 			relations->push_back(relation->body.variable);	
+			(*attributes_to_project)[relation->body.variable]=new vector<column_ref>;
 			cout<<"relation: "<<relation->body.variable<<endl;
 			if(relation_list->nodetype==variable_node){
 				break;
@@ -332,11 +420,13 @@ namespace example {
 			
 		}
 		relations->push_back(relation_list->body.variable);	
+		(*attributes_to_project)[relation_list->body.variable]=new vector<column_ref>;
 		cout<<"relation: "<<relation_list->body.variable<<endl;
 		return;
 	}
 
-	void Driver::get_columns(const int stmtNo, vector<column_ref> *columns){
+	void Driver::get_columns(vector<string> *total_relations,const int stmtNo, SchemaManager &schemaMgr, 
+							vector<column_ref> *columns, std::map<string,std::vector<column_ref>*> *attributes_to_project){
 		tree *columns_list = (tree*)calc.stmt_vector[stmtNo]->body.stmt.arg1->body.list.arg1;
 	    tree *column      = (tree*)calc.stmt_vector[stmtNo]->body.stmt.arg1->body.list.arg2;
 		column_ref cr;
@@ -345,11 +435,13 @@ namespace example {
 				cr.column_name = column->body.colref.arg1;
 				cr.relation_name = NULL;
 				cout<<"column: "<<cr.column_name<<endl;
+				(*attributes_to_project)[total_relations->front()]->push_back(cr);
 			}
 			else{
 				cr.column_name = column->body.colref.arg2->body.variable;
 				cr.relation_name = column->body.colref.arg1;
 				cout<<"table.column: "<<cr.relation_name<<"."<<cr.column_name<<endl;
+				(*attributes_to_project)[cr.relation_name]->push_back(cr);
 			}
 			columns->push_back(cr);	
 
@@ -364,11 +456,14 @@ namespace example {
 			cr.column_name = columns_list->body.colref.arg1;
 			cr.relation_name = NULL;
 			cout<<"column: "<<cr.column_name<<endl;
+			(*attributes_to_project)[total_relations->front()]->push_back(cr);
+
 		}
 		else{
 			cr.column_name = columns_list->body.colref.arg2->body.variable;
 			cr.relation_name = columns_list->body.colref.arg1;
 			cout<<"table.column: "<<cr.relation_name<<"."<<cr.column_name<<endl;
+			(*attributes_to_project)[cr.relation_name]->push_back(cr);
 		}
 		columns->push_back(cr);	
 		return;
@@ -381,11 +476,13 @@ namespace example {
 			Schema* rel_schema = schemaMgr.getSchema(relation_name);
 			int pos = rel_schema->getFieldPos(column.column_name);
 			if(pos!=-1){   /* field found in relation */
-				atr_relations->push_back(relation_name);
+				vector<string>::iterator p = find(total_relations->begin(), total_relations->end(), relation_name);    
+				if (p != total_relations->end()) {
+					atr_relations->push_back(relation_name);
+				}
 			}
-		}
+		}	
 	}
-
 
 	bool Driver::parse_file(const std::string &filename)
 	{
