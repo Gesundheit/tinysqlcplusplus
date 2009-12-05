@@ -77,6 +77,11 @@ namespace example {
 					run_select(stmtNo,schemaMgr);
 					break;
 				}
+				case delete_st:{
+					run_delete(stmtNo,schemaMgr,mem);
+					break;
+				   }
+
 			}
 		}
 
@@ -108,7 +113,7 @@ namespace example {
 				create_by_node(node->body.list.arg1,fieldNames,fieldTypes);			
 
 				fieldNames.push_back( string((const char*)node->body.list.arg2->body.colref.arg1) );
-				if( node->body.list.arg1->body.colref.type==str20 ){
+				if( node->body.list.arg2->body.colref.type==str20 ){
 					fieldTypes.push_back(string("STR20"));
 				}else{
 					fieldTypes.push_back(string("INT"));
@@ -176,6 +181,51 @@ namespace example {
 		}
 		return true;
 	}
+
+	bool Driver::run_delete(int stmtNo, SchemaManager &schemaMgr, MainMemory &mem){
+		printf("run_delete\n");
+
+		if(calc.stmt_vector[stmtNo]->body.stmt.arg2 == NULL){
+			Schema* schema = schemaMgr.getSchema( calc.stmt_vector[stmtNo]->body.stmt.arg1->body.variable );
+			if(schema == NULL){
+				printf("Table not found\n");
+				return false;
+			}
+			Relation* relationPtr = schemaMgr.getRelation( calc.stmt_vector[stmtNo]->body.stmt.arg1->body.variable);
+			if(relationPtr == NULL){
+				printf("Table not found\n");
+				return false;
+			}
+			int ct;
+			for (ct=0;ct<relationPtr->getNumOfBlocks();ct++) {
+				relationPtr->deleteBlock(ct);
+			}
+			relationPtr->printRelation();
+		}else{
+			printf("has argue\n");
+			// Obtain all tuples of this relation
+			Relation* relationPtr = schemaMgr.getRelation( calc.stmt_vector[stmtNo]->body.stmt.arg1->body.variable);
+			if(relationPtr->getNumOfBlocks()==NULL){
+				return false;
+			}
+			int ct;
+			vector<Tuple> totaltuples;
+			for(ct=0;ct<relationPtr->getNumOfBlocks();ct++){
+				relationPtr->readBlockToMemory(ct,0);
+				Block* block=mem.getBlock(0);
+				vector<Tuple> tuples=block->getTuples();
+				for(int ct2=0;ct2<tuples.size();ct2++){
+					totaltuples.push_back(tuples.at(ct2));
+				}
+			}
+
+
+
+
+
+		}
+		return true;
+	}
 	
 	bool Driver::run_insert(int stmtNo, SchemaManager &schemaMgr, MainMemory &mem){
 
@@ -205,6 +255,7 @@ namespace example {
 			printf("Table not found\n");
 			return false;
 		}
+		relationPtr->printRelation();
 
 		// Read last block from relation into memory_index 0
 		printf("relationPtr NumOfBlocks\n");
@@ -213,14 +264,18 @@ namespace example {
 			relationPtr->readBlockToMemory(relationPtr->getNumOfBlocks()-1,0);
 		}
 
-
 		// Set up a block in the memory
 	    Tuple tuple(schema);
 		Block* block=mem.getBlock(0);	 
 		if(block->isFull()==1){
-			printf("Erase\n");
 			block->clear();
 		} 
+		// Clean up residual
+		if(relationPtr->getNumOfBlocks()==0){
+			block->clear();
+		}
+
+
 		int ct = 0; 
 		for(ct=0; ct<fieldValues.size();ct++){
 			if(fieldValues[ct].atom_type == literal_node){
@@ -231,12 +286,12 @@ namespace example {
 		}
 		block->appendTuple(tuple);
 
-		cout << "Append the tuple:" << endl;
-		tuple.printTuple();
-		cout << "The block is full? " << (block->isFull()==1?"true":"false") << endl;
-		cout << "The block currently has " << block->getNumTuples() << " tuples:" << endl;
-		block->printBlock();
-		cout << endl;
+		//cout << "Append the tuple:" << endl;
+		//tuple.printTuple();
+		//cout << "The block is full? " << (block->isFull()==1?"true":"false") << endl;
+		//cout << "The block currently has " << block->getNumTuples() << " tuples:" << endl;
+		//block->printBlock();
+		//cout << endl;
 
 		if(relationPtr->getNumOfBlocks()==0){
 			relationPtr->writeBlockFromMemory(0,0);
@@ -249,12 +304,35 @@ namespace example {
 			relationPtr->writeBlockFromMemory(relationPtr->getNumOfBlocks(),0);
 		}
 
-		relationPtr->printRelation();
-		cout << endl;
-
 		return true;
 	}
 
+	vector<Tuple>* Driver::delete_by_node(tree* node,vector<Tuple> origSet){
+		if(node!=NULL){
+			if(node->body.list.arg1==NULL && node->body.list.arg2==NULL){
+				return NULL;
+			} else if(node->body.expr.arg1->nodetype==colref_node && 
+				node->body.expr.arg2->nodetype==literal_node){
+					vector<Tuple> *r = new vector<Tuple>;
+					int ct;
+					for(ct=0;ct<origSet.size();ct++){
+
+					}
+
+					//r->push_back();
+					return r;
+
+			} else if(node->body.expr.arg1->nodetype==colref_node &&
+				node->body.expr.arg2->nodetype==number_node){
+			} else if(node->body.expr.arg1->nodetype==number_node &&
+				node->body.expr.arg2->nodetype==number_node){
+					// not handling for now
+			} else{
+
+			}
+		}
+		return NULL;
+	}
 
 	void Driver::insert_by_node(tree* node,vector<string> &fieldNames,vector<atom_ref> &fieldValues,char* op){
 		if(node!=NULL){
