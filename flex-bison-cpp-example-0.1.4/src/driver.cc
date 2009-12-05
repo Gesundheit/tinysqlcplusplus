@@ -326,10 +326,10 @@ namespace example {
 
 	void Driver::process_condition(vector<string> *total_relations, int stmtNo, SchemaManager &schemaMgr, 
 									tree* condition,std::map<string,std::vector<column_ref>*> *attributes_to_project,
-									vector<string> *condition_relations){
+									vector<string> *&condition_relations){
 		vector<string> *condition_relations1 = new vector<string>;
 		vector<string> *condition_relations2 = new vector<string>;
-		if(condition->nodetype==binary) {
+		if(condition->body.expr.type==binary) {
 			tree *arg1 = condition->body.expr.arg1;
 			tree *arg2 = condition->body.expr.arg2;
 			if(arg1->nodetype==colref_node) {
@@ -369,19 +369,21 @@ namespace example {
 			}	
 
 			if(condition_relations1->size()==0) {
-				condition_relations=condition_relations2;
+				*condition_relations=*condition_relations2;
+				return;
 			}
 			else if(condition_relations2->size()==0) {
-				condition_relations=condition_relations1;
+				*condition_relations=*condition_relations1;
+				return;
 			}
-			for(int i=0;i<condition_relations1->size(); i++) {
-				//find intersection
-				//find which relations will be joined TODO!!!!!
-				if((*condition_relations1)[0]!=(*condition_relations2)[0]){
-					condition->body.expr.jtype=join;
-					condition->body.expr.j->arg1_relations = condition_relations1;
-					condition->body.expr.j->arg2_relations = condition_relations2;
-				}
+
+			if(condition_relations2->size()!=0 && condition_relations2->size()!=0) {
+				condition->body.expr.jtype = join; 
+				condition->body.expr.j = new(join_n);
+				condition->body.expr.j->arg1_relations  = new vector<string>;
+				condition->body.expr.j->arg2_relations  = new vector<string>;
+				condition->body.expr.j->arg1_relations = condition_relations1;
+				condition->body.expr.j->arg2_relations = condition_relations2;
 			}
 
 			if(Driver::relations_get_size(condition_relations1,schemaMgr)> relations_get_size(condition_relations1,schemaMgr)){
