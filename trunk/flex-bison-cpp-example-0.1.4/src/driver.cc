@@ -173,8 +173,7 @@ namespace example {
 		get_columns(relations,stmtNo, schemaMgr, columns, attributes_to_project);
 		
 		if(calc.stmt_vector[stmtNo]->body.stmt.arg3!=NULL){
-			vector<string> *condition_relations = new vector<string>;
-			process_condition(relations, stmtNo, schemaMgr, calc.stmt_vector[stmtNo]->body.stmt.arg3, attributes_to_project, condition_relations);
+			process_condition(relations, stmtNo, schemaMgr, calc.stmt_vector[stmtNo]->body.stmt.arg3, attributes_to_project);
 		}
 		else{
 			cout<<"No condition"<<endl;
@@ -402,11 +401,11 @@ namespace example {
 
 	}
 
-	void Driver::process_condition(vector<string> *total_relations, int stmtNo, SchemaManager &schemaMgr, 
-									tree* condition,std::map<string,std::vector<column_ref>*> *attributes_to_project,
-									vector<string> *&condition_relations){
-		vector<string> *condition_relations1 = new vector<string>;
-		vector<string> *condition_relations2 = new vector<string>;
+	 vector<string> Driver::process_condition(const vector<string> *total_relations,const int stmtNo,
+											SchemaManager &schemaMgr, tree* condition, 
+											std::map<string,std::vector<column_ref>*> *attributes_to_project){
+		vector<string> condition_relations1;
+		vector<string> condition_relations2;
 		if(condition->body.expr.type==binary) {
 			tree *arg1 = condition->body.expr.arg1;
 			tree *arg2 = condition->body.expr.arg2;
@@ -421,7 +420,7 @@ namespace example {
 					cr.relation_name = arg1->body.colref.arg1;
 					(*attributes_to_project)[cr.relation_name]->push_back(cr);
 				}
-				condition_relations1->push_back(cr.relation_name);
+				condition_relations1.push_back(cr.relation_name);
 			}
 			if(arg2->nodetype==colref_node) {
 				column_ref cr;
@@ -434,37 +433,32 @@ namespace example {
 					cr.relation_name = arg2->body.colref.arg1;
 					(*attributes_to_project)[cr.relation_name]->push_back(cr);
 				}
-				condition_relations2->push_back(cr.relation_name);
+				condition_relations2.push_back(cr.relation_name);
 			}
 			
 			if(arg1->nodetype==number_node || arg2->nodetype==number_node || arg2->nodetype==literal_node || arg1->nodetype==literal_node) {
 			} 
 			if(arg1->nodetype==expr_node) {
-				process_condition(total_relations, stmtNo, schemaMgr, condition->body.expr.arg1,attributes_to_project,condition_relations1);
+				condition_relations1 = process_condition(total_relations, stmtNo, schemaMgr, condition->body.expr.arg1,attributes_to_project);
 			}
 			if(arg2->nodetype==expr_node) {
-				process_condition(total_relations, stmtNo, schemaMgr, condition->body.expr.arg2,attributes_to_project,condition_relations2);
+				condition_relations2 = process_condition(total_relations, stmtNo, schemaMgr, condition->body.expr.arg2,attributes_to_project);
 			}	
 
-			if(condition_relations1->size()==0) {
-				*condition_relations=*condition_relations2;
-				return;
+			if(condition_relations1.size()==0) {
+				return condition_relations2;				
 			}
-			else if(condition_relations2->size()==0) {
-				*condition_relations=*condition_relations1;
-				return;
+			else if(condition_relations2.size()==0) {
+				return condition_relations1;
 			}
-
-			if(condition_relations2->size()!=0 && condition_relations2->size()!=0) {
+			else{
 				condition->body.expr.jtype = join; 
 				condition->body.expr.j = new(join_n);
-				condition->body.expr.j->arg1_relations  = new vector<string>;
-				condition->body.expr.j->arg2_relations  = new vector<string>;
-				condition->body.expr.j->arg1_relations = condition_relations1;
-				condition->body.expr.j->arg2_relations = condition_relations2;
+				condition->body.expr.j->arg1_relations  = new vector<string>(condition_relations1);
+				condition->body.expr.j->arg2_relations  = new vector<string>(condition_relations2);
 			}
 
-			if(Driver::relations_get_size(condition_relations1,schemaMgr)> relations_get_size(condition_relations1,schemaMgr)){
+			if(Driver::relations_get_size(condition_relations1, schemaMgr)> relations_get_size(condition_relations1,schemaMgr)){
 				//execute the right argument first.
 			}
 		
@@ -473,14 +467,14 @@ namespace example {
 		}
 		else if(condition->nodetype==not) {
 		}
-
-		return;
+		condition_relations1.insert(condition_relations1.end(),condition_relations2.begin(),condition_relations2.end());
+		return condition_relations1;
 	}
 
-	unsigned long Driver::relations_get_size(vector<string> *relations, SchemaManager &schemaMgr) {
+	unsigned long Driver::relations_get_size(const vector<string> &relations, SchemaManager &schemaMgr) {
 		long size=0;
-		for (int i = 0; i < relations->size(); i++){
-			size += schemaMgr.getRelation((*relations)[i])->getNumOfTuples();
+		for (int i = 0; i < relations.size(); i++){
+			size += schemaMgr.getRelation(relations[i])->getNumOfTuples();
 		}
 		return size;
 	}
@@ -505,7 +499,7 @@ namespace example {
 		return;
 	}
 
-	void Driver::get_columns(vector<string> *total_relations,const int stmtNo, SchemaManager &schemaMgr, 
+	void Driver::get_columns(const vector<string> *total_relations, const int stmtNo, SchemaManager &schemaMgr, 
 							vector<column_ref> *columns, std::map<string,std::vector<column_ref>*> *attributes_to_project){
 		tree *columns_list = (tree*)calc.stmt_vector[stmtNo]->body.stmt.arg1->body.list.arg1;
 	    tree *column      = (tree*)calc.stmt_vector[stmtNo]->body.stmt.arg1->body.list.arg2;
@@ -549,8 +543,8 @@ namespace example {
 		return;
 
 	}
-
-	void Driver::get_attribute_relations(vector<string> *total_relations, column_ref column, SchemaManager &schemaMgr, vector<string> *atr_relations){	
+	void Driver::get_attribute_relations(vector<string> *total_relations,const column_ref column, 
+										SchemaManager &schemaMgr, vector<string> *atr_relations){
 		for (int i = 0; i < total_relations->size(); i++){
 			string relation_name = (*total_relations)[i];
 			Schema* rel_schema = schemaMgr.getSchema(relation_name);
