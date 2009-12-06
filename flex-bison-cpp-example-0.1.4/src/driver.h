@@ -121,18 +121,18 @@ public:
 	
 	/** Rerurns a vector with the relations from the SELECT body of a SELECT
      * statement. */
-	void Driver::get_columns(vector<string> *total_relations,const int stmtNo, SchemaManager &schemaMgr, 
+	void Driver::get_columns(const vector<string> *total_relations, const int stmtNo, SchemaManager &schemaMgr, 
 							vector<column_ref> *columns, std::map<string,std::vector<column_ref>*> *attributes_to_project);
 	/** Returns a vector with the relations having a specific column */	
-	void Driver::get_attribute_relations(vector<string> *total_relations, column_ref column,  SchemaManager &schemaMgr,
+	void Driver::get_attribute_relations( vector<string> *total_relations,const column_ref column, SchemaManager &schemaMgr,
 								vector<string> *atr_relations);
 
 	/**Process the WHERE body of a select statement */	
-	void Driver::process_condition(vector<string> *total_relations, int stmtNo, SchemaManager &schemaMgr, tree* condition, 
-					std::map<string,std::vector<column_ref>*> *attributes_to_project, vector<string> *&condition_relations);
+	 vector<string> Driver::process_condition(const vector<string> *total_relations,const int stmtNo,SchemaManager &schemaMgr,tree* condition, 
+					std::map<string,std::vector<column_ref>*> *attributes_to_project);
 
 	/**return the total size of the given relations */	
-	unsigned long Driver::relations_get_size(vector<string> *relations, SchemaManager &schemaMgr);
+	unsigned long Driver::relations_get_size(const vector<string> &relations, SchemaManager &schemaMgr);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */
