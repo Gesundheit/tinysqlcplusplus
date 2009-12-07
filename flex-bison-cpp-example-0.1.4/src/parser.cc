@@ -210,12 +210,12 @@ namespace example
 
     switch (yytype)
       {
-        case 32: /* "\"NAME\"" */
+        case 33: /* "\"NAME\"" */
 #line 106 "parser.yy"
 	{ delete (yyvaluep->stringVal); };
 #line 217 "parser.cc"
 	break;
-      case 33: /* "\"STRING\"" */
+      case 34: /* "\"STRING\"" */
 #line 107 "parser.yy"
 	{ delete (yyvaluep->stringVal); };
 #line 222 "parser.cc"
@@ -432,59 +432,59 @@ namespace example
 
   case 6:
 #line 135 "parser.yy"
-    {(yyval.tree_s) = (yysemantic_stack_[(1) - (1)].tree_s);;}
+    {(yyval.tree_s) = (yysemantic_stack_[(1) - (1)].tree_s);driver.calc.stmt_vector.push_back((tree *)(yysemantic_stack_[(1) - (1)].tree_s));;}
     break;
 
   case 7:
 #line 136 "parser.yy"
-    {(yyval.tree_s) = (yysemantic_stack_[(1) - (1)].tree_s);;}
+    {(yyval.tree_s) = (yysemantic_stack_[(1) - (1)].tree_s);driver.calc.stmt_vector.push_back((tree *)(yysemantic_stack_[(1) - (1)].tree_s));;}
     break;
 
   case 8:
 #line 137 "parser.yy"
-    {(yyval.tree_s) = (yysemantic_stack_[(1) - (1)].tree_s);;}
+    {(yyval.tree_s) = (yysemantic_stack_[(1) - (1)].tree_s);driver.calc.stmt_vector.push_back((tree *)(yysemantic_stack_[(1) - (1)].tree_s));;}
     break;
 
   case 9:
 #line 138 "parser.yy"
-    {(yyval.tree_s) = (yysemantic_stack_[(1) - (1)].tree_s);;}
+    {(yyval.tree_s) = (yysemantic_stack_[(1) - (1)].tree_s);driver.calc.stmt_vector.push_back((tree *)(yysemantic_stack_[(1) - (1)].tree_s));;}
     break;
 
   case 10:
 #line 139 "parser.yy"
-    {(yyval.tree_s) = (yysemantic_stack_[(1) - (1)].tree_s);;}
+    {(yyval.tree_s) = (yysemantic_stack_[(1) - (1)].tree_s);driver.calc.stmt_vector.push_back((tree *)(yysemantic_stack_[(1) - (1)].tree_s));;}
     break;
 
   case 11:
 #line 143 "parser.yy"
     {printf("DROP TABLE\n");
-																		driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(3) - (3)].tree_s),NULL,NULL,NULL,drop_st) );
+																		(yyval.tree_s) =(SQLTree *) driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(3) - (3)].tree_s),NULL,NULL,NULL,drop_st);
 																		;}
     break;
 
   case 12:
 #line 149 "parser.yy"
     {printf("CREATE TABLE\n");																	   
-																		driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(6) - (3)].tree_s),(tree *)(yysemantic_stack_[(6) - (5)].tree_s),NULL,NULL,create_st) );
+																		(yyval.tree_s) = (SQLTree *)driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(6) - (3)].tree_s),(tree *)(yysemantic_stack_[(6) - (5)].tree_s),NULL,NULL,create_st);
 																		;}
     break;
 
   case 13:
 #line 155 "parser.yy"
     {printf("INSERT INTO\n");
-																		driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(5) - (3)].tree_s),(tree *)(yysemantic_stack_[(5) - (4)].tree_s),(tree *)(yysemantic_stack_[(5) - (5)].tree_s),NULL,insert_st) );
+																		(yyval.tree_s) = (SQLTree *) driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(5) - (3)].tree_s),(tree *)(yysemantic_stack_[(5) - (4)].tree_s),(tree *)(yysemantic_stack_[(5) - (5)].tree_s),NULL,insert_st);
 																		;}
     break;
 
   case 14:
 #line 164 "parser.yy"
     {printf("SELECT FROM\n"); 																		
-																	/* driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st); */
+
 
 																	if((yysemantic_stack_[(7) - (2)].tree_s)==NULL){
-																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(7) - (3)].tree_s),(tree *)(yysemantic_stack_[(7) - (5)].tree_s),(tree *)(yysemantic_stack_[(7) - (6)].tree_s),(tree *)(yysemantic_stack_[(7) - (7)].tree_s),select_st,false) );
+																	(yyval.tree_s) = (SQLTree *)driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(7) - (3)].tree_s),(tree *)(yysemantic_stack_[(7) - (5)].tree_s),(tree *)(yysemantic_stack_[(7) - (6)].tree_s),(tree *)(yysemantic_stack_[(7) - (7)].tree_s),select_st,false);
 																	}else{
-																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(7) - (3)].tree_s),(tree *)(yysemantic_stack_[(7) - (5)].tree_s),(tree *)(yysemantic_stack_[(7) - (6)].tree_s),(tree *)(yysemantic_stack_[(7) - (7)].tree_s),select_st,true) );
+																	(yyval.tree_s) = (SQLTree *)driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(7) - (3)].tree_s),(tree *)(yysemantic_stack_[(7) - (5)].tree_s),(tree *)(yysemantic_stack_[(7) - (6)].tree_s),(tree *)(yysemantic_stack_[(7) - (7)].tree_s),select_st,true);
 																	}
 		;}
     break;
@@ -492,228 +492,258 @@ namespace example
   case 15:
 #line 176 "parser.yy"
     {printf("DELETE FROM\n");
-																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(4) - (3)].tree_s),(tree *)(yysemantic_stack_[(4) - (4)].tree_s),NULL,NULL,delete_st) );
-;}
+																	(yyval.tree_s) = (SQLTree *)driver.calc.aSQLTree->make_stmt((tree *)(yysemantic_stack_[(4) - (3)].tree_s),(tree *)(yysemantic_stack_[(4) - (4)].tree_s),NULL,NULL,delete_st);
+																	;}
     break;
 
   case 16:
-#line 182 "parser.yy"
+#line 181 "parser.yy"
     {(yyval.tree_s)=NULL;;}
     break;
 
   case 17:
-#line 183 "parser.yy"
+#line 182 "parser.yy"
     {printf("WHERE\n");(yyval.tree_s)=(yysemantic_stack_[(2) - (2)].tree_s);;}
     break;
 
   case 18:
-#line 187 "parser.yy"
+#line 186 "parser.yy"
     {(yyval.tree_s)=NULL;;}
     break;
 
   case 19:
-#line 188 "parser.yy"
+#line 187 "parser.yy"
     {printf("ORDER BY\n");(yyval.tree_s)=(yysemantic_stack_[(3) - (3)].tree_s);;}
     break;
 
   case 20:
-#line 191 "parser.yy"
+#line 190 "parser.yy"
     {printf("select_expr_list\n");(yyval.tree_s)=(yysemantic_stack_[(1) - (1)].tree_s);;}
     break;
 
   case 21:
-#line 192 "parser.yy"
+#line 191 "parser.yy"
     {printf("*\n");(yyval.tree_s) = (SQLTree *)driver.calc.aSQLTree->make_variable("*");;}
     break;
 
   case 22:
-#line 195 "parser.yy"
+#line 194 "parser.yy"
     { (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)(yysemantic_stack_[(1) - (1)].tree_s),select); ;}
     break;
 
   case 23:
-#line 196 "parser.yy"
+#line 195 "parser.yy"
     {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->append((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),select);;}
     break;
 
   case 24:
-#line 200 "parser.yy"
-    {printf("atom\n");;}
+#line 198 "parser.yy"
+    {(yyval.tree_s)=(yysemantic_stack_[(1) - (1)].tree_s);;}
     break;
 
   case 25:
-#line 201 "parser.yy"
-    {printf("ADD\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"+",binary);;}
-    break;
-
-  case 26:
-#line 202 "parser.yy"
-    {printf("SUB\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"-",binary);;}
-    break;
-
-  case 27:
-#line 203 "parser.yy"
-    {printf("MUL\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"*",binary);;}
-    break;
-
-  case 28:
-#line 204 "parser.yy"
-    {printf("DIV\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"/",binary);;}
-    break;
-
-  case 29:
-#line 205 "parser.yy"
-    {printf("AND\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"AND",binary);;}
-    break;
-
-  case 30:
-#line 206 "parser.yy"
+#line 199 "parser.yy"
     {printf("OR\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"OR",binary);;}
     break;
 
-  case 31:
-#line 207 "parser.yy"
+  case 27:
+#line 202 "parser.yy"
+    {printf("AND\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"AND",binary);;}
+    break;
+
+  case 28:
+#line 205 "parser.yy"
+    {(yyval.tree_s)=(yysemantic_stack_[(1) - (1)].tree_s);;}
+    break;
+
+  case 29:
+#line 206 "parser.yy"
     {printf("NOT\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(2) - (2)].tree_s),NULL,NULL,not);;}
     break;
 
+  case 30:
+#line 209 "parser.yy"
+    {(yyval.tree_s)=(yysemantic_stack_[(1) - (1)].tree_s);;}
+    break;
+
+  case 31:
+#line 210 "parser.yy"
+    {(yyval.tree_s)=(yysemantic_stack_[(3) - (2)].tree_s);;}
+    break;
+
   case 32:
-#line 208 "parser.yy"
-    {printf("COMP\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),*(yysemantic_stack_[(3) - (2)].stringVal),binary);;}
+#line 213 "parser.yy"
+    {printf("COMP\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),">",binary);;}
     break;
 
   case 33:
-#line 209 "parser.yy"
-    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (2)].tree_s),NULL,NULL,paren);;}
+#line 214 "parser.yy"
+    {printf("COMP\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"<",binary);;}
     break;
 
   case 34:
-#line 212 "parser.yy"
-    { (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)(yysemantic_stack_[(1) - (1)].tree_s),table_ref); ;}
+#line 215 "parser.yy"
+    {printf("COMP\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"=",binary);;}
     break;
 
   case 35:
-#line 213 "parser.yy"
-    { (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->append((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),table_ref); ;}
+#line 218 "parser.yy"
+    {printf("atom\n");;}
     break;
 
   case 36:
-#line 217 "parser.yy"
-    {printf("VALUES\n");(yyval.tree_s)=(yysemantic_stack_[(4) - (3)].tree_s);;}
+#line 219 "parser.yy"
+    {printf("ADD\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"+",binary);;}
     break;
 
   case 37:
-#line 218 "parser.yy"
-    {printf("SELECT\n");(yyval.tree_s)=(yysemantic_stack_[(1) - (1)].tree_s);;}
-    break;
-
-  case 38:
-#line 222 "parser.yy"
-    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)(yysemantic_stack_[(1) - (1)].tree_s),column);;}
+#line 220 "parser.yy"
+    {printf("SUB\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"-",binary);;}
     break;
 
   case 39:
-#line 223 "parser.yy"
-    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->append((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),column);;}
+#line 225 "parser.yy"
+    {printf("MUL\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"*",binary);;}
     break;
 
   case 40:
-#line 227 "parser.yy"
-    {printf("atom in insert_atom\n");(yyval.tree_s)=(yysemantic_stack_[(1) - (1)].tree_s);;}
+#line 226 "parser.yy"
+    {printf("DIV\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),"/",binary);;}
     break;
 
   case 41:
 #line 228 "parser.yy"
-    {(yyval.tree_s)=NULL;;}
+    { (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)(yysemantic_stack_[(1) - (1)].tree_s),table_ref); ;}
     break;
 
   case 42:
-#line 232 "parser.yy"
-    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->append((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),column);;}
+#line 229 "parser.yy"
+    { (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->append((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),table_ref); ;}
     break;
 
   case 43:
 #line 233 "parser.yy"
-    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)(yysemantic_stack_[(1) - (1)].tree_s),column);;}
+    {printf("VALUES\n");(yyval.tree_s)=(yysemantic_stack_[(4) - (3)].tree_s);;}
     break;
 
   case 44:
-#line 237 "parser.yy"
-    {(yyval.tree_s)=NULL;;}
+#line 234 "parser.yy"
+    {printf("SELECT\n");(yyval.tree_s)=(yysemantic_stack_[(1) - (1)].tree_s);;}
     break;
 
   case 45:
 #line 238 "parser.yy"
-    {(yyval.tree_s)=(yysemantic_stack_[(3) - (2)].tree_s);;}
-    break;
-
-  case 46:
-#line 243 "parser.yy"
     {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)(yysemantic_stack_[(1) - (1)].tree_s),column);;}
     break;
 
+  case 46:
+#line 239 "parser.yy"
+    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->append((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),column);;}
+    break;
+
   case 47:
-#line 244 "parser.yy"
-    {printf(",\n");(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->append((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),column);;}
+#line 243 "parser.yy"
+    {printf("atom in insert_atom\n");(yyval.tree_s)=(yysemantic_stack_[(1) - (1)].tree_s);;}
     break;
 
   case 48:
-#line 248 "parser.yy"
+#line 244 "parser.yy"
     {(yyval.tree_s)=NULL;;}
     break;
 
   case 49:
-#line 249 "parser.yy"
-    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_stmt(NULL,NULL,NULL,NULL,select_st);;}
+#line 248 "parser.yy"
+    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->append((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),column);;}
     break;
 
   case 50:
-#line 253 "parser.yy"
-    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->set_type((tree *)(yysemantic_stack_[(2) - (1)].tree_s),"i");;}
+#line 249 "parser.yy"
+    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)(yysemantic_stack_[(1) - (1)].tree_s),column);;}
     break;
 
   case 51:
-#line 254 "parser.yy"
-    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->set_type((tree *)(yysemantic_stack_[(2) - (1)].tree_s),"s");;}
+#line 253 "parser.yy"
+    {(yyval.tree_s)=NULL;;}
     break;
 
   case 52:
-#line 258 "parser.yy"
-    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_literal(*(yysemantic_stack_[(1) - (1)].stringVal));;}
+#line 254 "parser.yy"
+    {(yyval.tree_s)=(yysemantic_stack_[(3) - (2)].tree_s);;}
     break;
 
   case 53:
 #line 259 "parser.yy"
-    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_number((yysemantic_stack_[(1) - (1)].integerVal));;}
+    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_list((tree *)(yysemantic_stack_[(1) - (1)].tree_s),column);;}
     break;
 
   case 54:
 #line 260 "parser.yy"
-    {(yyval.tree_s)=(yysemantic_stack_[(1) - (1)].tree_s);;}
+    {printf(",\n");(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->append((tree *)(yysemantic_stack_[(3) - (1)].tree_s),(tree *)(yysemantic_stack_[(3) - (3)].tree_s),column);;}
     break;
 
   case 55:
 #line 264 "parser.yy"
-    {printf("NAME\n");(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_colref(*(yysemantic_stack_[(2) - (1)].stringVal),(tree *)(yysemantic_stack_[(2) - (2)].tree_s));;}
-    break;
-
-  case 56:
-#line 269 "parser.yy"
     {(yyval.tree_s)=NULL;;}
     break;
 
+  case 56:
+#line 265 "parser.yy"
+    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_stmt(NULL,NULL,NULL,NULL,select_st);;}
+    break;
+
   case 57:
-#line 270 "parser.yy"
-    {printf(".NAME\n");(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_variable(*(yysemantic_stack_[(2) - (2)].stringVal));;}
+#line 269 "parser.yy"
+    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->set_type((tree *)(yysemantic_stack_[(2) - (1)].tree_s),"i");;}
     break;
 
   case 58:
+#line 270 "parser.yy"
+    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->set_type((tree *)(yysemantic_stack_[(2) - (1)].tree_s),"s");;}
+    break;
+
+  case 59:
 #line 274 "parser.yy"
-    {std::cout<<*(yysemantic_stack_[(1) - (1)].stringVal);std::cout<<"\n";(yyval.tree_s) = (SQLTree *)driver.calc.aSQLTree->make_variable(*(yysemantic_stack_[(1) - (1)].stringVal));;}
+    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_literal(*(yysemantic_stack_[(1) - (1)].stringVal));;}
+    break;
+
+  case 60:
+#line 275 "parser.yy"
+    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_number((yysemantic_stack_[(1) - (1)].integerVal));;}
+    break;
+
+  case 61:
+#line 276 "parser.yy"
+    {(yyval.tree_s)=(yysemantic_stack_[(1) - (1)].tree_s);;}
+    break;
+
+  case 62:
+#line 277 "parser.yy"
+    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (2)].tree_s),NULL,NULL,paren);;}
+    break;
+
+  case 63:
+#line 281 "parser.yy"
+    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_colref(*(yysemantic_stack_[(2) - (1)].stringVal),(tree *)(yysemantic_stack_[(2) - (2)].tree_s));;}
+    break;
+
+  case 64:
+#line 286 "parser.yy"
+    {(yyval.tree_s)=NULL;;}
+    break;
+
+  case 65:
+#line 287 "parser.yy"
+    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_variable(*(yysemantic_stack_[(2) - (2)].stringVal));;}
+    break;
+
+  case 66:
+#line 291 "parser.yy"
+    {(yyval.tree_s) = (SQLTree *)driver.calc.aSQLTree->make_variable(*(yysemantic_stack_[(1) - (1)].stringVal));;}
     break;
 
 
     /* Line 675 of lalr1.cc.  */
-#line 717 "parser.cc"
+#line 747 "parser.cc"
 	default: break;
       }
     YY_SYMBOL_PRINT ("-> $$ =", yyr1_[yyn], &yyval, &yyloc);
@@ -920,21 +950,22 @@ namespace example
 
   /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
      STATE-NUM.  */
-  const signed char Parser::yypact_ninf_ = -73;
+  const signed char Parser::yypact_ninf_ = -69;
   const signed char
   Parser::yypact_[] =
   {
-       -73,     4,   -73,    -1,    27,    11,    30,    52,   -73,     5,
-     -73,   -73,   -73,   -73,   -73,    48,    48,    48,    48,   -73,
-      13,   -73,   -73,   -73,    46,    78,   -73,    66,    44,   -73,
-     -73,    59,   -73,    44,    92,    67,    -6,   -73,   -73,    70,
-      44,   -73,    70,    19,    61,    71,   -73,    37,    48,    44,
-      44,    44,    44,    44,    44,    44,    44,   -19,   -73,    60,
-      -6,    24,   -73,    72,   -73,   -73,   -73,   -73,   -11,   -73,
-      -6,    56,    61,    65,    42,    42,   -73,   -73,   -73,    70,
-     -73,   -73,   -73,    70,    -2,    48,    93,   -73,   -73,   -73,
-      62,   -73,   -73,   -73,   102,   -73,   -73,    -2,    70,   -73,
-     -73
+       -69,     5,   -69,    -8,     7,     3,    19,    39,   -69,     6,
+     -69,   -69,   -69,   -69,   -69,    30,    30,    30,    30,   -69,
+       9,   -69,   -69,   -69,    22,    62,   -69,    60,   -69,    26,
+      76,    51,   -69,    64,    23,   -69,    64,    29,    65,   -69,
+      30,    64,    41,   -69,    67,   -10,   -69,   -69,    23,   -69,
+      75,    77,   -69,   -69,    47,   -69,    52,   -69,    48,   -69,
+      66,   -69,   -69,   -69,     0,   -69,   -69,   -69,    64,   -69,
+     -69,   -69,    63,    25,    23,    23,    34,    34,    34,    34,
+      34,    34,    34,   -69,    64,    -5,    30,    88,   -69,   -69,
+     -69,   -69,   -69,    34,    59,    59,    59,   -69,   -69,   -69,
+     -69,   -69,   -69,    53,   -69,   -69,   -69,   100,   -69,    32,
+     -69,    -5,    64,   -69,   -69
   };
 
   /* YYDEFACT[S] -- default rule to reduce with in state S when YYTABLE
@@ -943,35 +974,38 @@ namespace example
   const unsigned char
   Parser::yydefact_[] =
   {
-         2,     0,     1,     0,     0,     0,     0,    48,     3,     0,
-       7,     6,     8,     9,    10,     0,     0,     0,     0,    49,
-       0,     5,     4,    58,     0,    16,    11,    44,     0,    21,
-      53,    56,    52,     0,     0,    20,    22,    24,    54,     0,
-       0,    15,     0,     0,    31,     0,    55,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,    43,     0,
-      17,     0,    46,     0,    37,    13,    57,    33,    16,    34,
-      23,    30,    29,    32,    25,    26,    27,    28,    12,     0,
-      50,    51,    45,     0,     0,     0,    18,    42,    47,    41,
-       0,    38,    40,    35,     0,    14,    36,     0,     0,    39,
-      19
+         2,     0,     1,     0,     0,     0,     0,    55,     3,     0,
+       7,     6,     8,     9,    10,     0,     0,     0,     0,    56,
+       0,     5,     4,    66,     0,    16,    11,    51,    21,    64,
+       0,    20,    22,     0,     0,    15,     0,     0,     0,    63,
+       0,     0,     0,    50,     0,     0,    60,    59,     0,    17,
+      24,    26,    28,    30,     0,    35,    38,    61,     0,    53,
+       0,    44,    13,    65,    16,    41,    23,    12,     0,    57,
+      58,    29,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,    52,     0,     0,     0,    18,    49,    31,
+      62,    25,    27,     0,    33,    32,    34,    36,    37,    39,
+      40,    54,    48,     0,    45,    47,    42,     0,    14,     0,
+      43,     0,     0,    46,    19
   };
 
   /* YYPGOTO[NTERM-NUM].  */
   const signed char
   Parser::yypgoto_[] =
   {
-       -73,   -73,   -73,   -73,   -73,   -73,    68,   -73,    40,   -73,
-     -73,   -73,     0,   -73,   -73,   -73,    12,   -73,   -73,   -73,
-     -73,    31,   -72,   -36,   -73,   -16
+       -69,   -69,   -69,   -69,   -69,   -69,    68,   -69,    40,   -69,
+     -69,   -69,   -37,    31,   -69,    69,   -69,   -44,    12,   -69,
+     -69,   -69,    -4,   -69,   -69,   -69,   -69,    42,   -68,   -20,
+     -69,   -15
   };
 
   /* YYDEFGOTO[NTERM-NUM].  */
   const signed char
   Parser::yydefgoto_[] =
   {
-        -1,     1,     9,    10,    11,    12,    13,    14,    41,    95,
-      34,    35,    36,    68,    65,    90,    91,    57,    43,    61,
-      20,    58,    37,    38,    46,    24
+        -1,     1,     9,    10,    11,    12,    13,    14,    35,   108,
+      30,    31,    49,    50,    51,    52,    53,    54,    55,    64,
+      62,   103,   104,    42,    37,    58,    20,    43,    56,    57,
+      39,    24
   };
 
   /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -981,36 +1015,36 @@ namespace example
   const unsigned char
   Parser::yytable_[] =
   {
-        25,    26,    27,    59,     2,    21,    62,    40,     3,     4,
-      89,     5,    92,     6,    50,    15,    51,    78,    79,     7,
-      52,    53,    54,    55,    56,    92,    85,    17,    44,    30,
-      31,    32,    69,    47,     7,    16,    63,    28,     8,    22,
-      60,    18,    29,    59,    30,    31,    32,    88,    33,    70,
-      71,    72,    73,    74,    75,    76,    77,    50,    19,    51,
-      82,    83,   100,    52,    53,    54,    55,    56,    28,    93,
-      80,    55,    56,    67,    81,    30,    31,    32,    51,    33,
-      23,    39,    52,    53,    54,    55,    56,    52,    53,    54,
-      55,    56,    53,    54,    55,    56,    40,    45,    96,    97,
-      48,    42,    31,    66,    49,    98,    94,    84,    86,    99,
-      87,    64
+        32,    25,    26,    27,    73,     2,    21,   102,    15,     3,
+       4,    72,     5,    44,     6,    16,    59,   105,    34,    17,
+       7,    66,    46,    29,    47,    65,    48,    46,    29,    47,
+      18,    93,    94,    95,    96,    97,    98,    91,    86,    28,
+       8,    22,    29,   105,     7,    19,    60,    45,    44,   109,
+      76,    77,    78,    79,    80,    46,    29,    47,    33,    48,
+      79,    80,    90,    23,   101,    38,    46,    29,    47,    90,
+      93,   106,    76,    77,    78,    79,    80,    69,    67,    68,
+      34,    70,    81,    82,    40,    83,    84,    79,    80,    41,
+     110,   111,   114,    99,   100,    74,    36,    29,    63,    75,
+      89,   107,    85,   112,    87,    61,    92,   113,     0,     0,
+      88,     0,     0,     0,    71
   };
 
   /* YYCHECK.  */
-  const unsigned char
+  const signed char
   Parser::yycheck_[] =
   {
-        16,    17,    18,    39,     0,     0,    42,    18,     4,     5,
-      12,     7,    84,     9,    20,    16,    22,    36,    37,    15,
-      26,    27,    28,    29,    30,    97,    37,    16,    28,    31,
-      32,    33,    48,    33,    15,     8,    17,    24,    34,    34,
-      40,    11,    29,    79,    31,    32,    33,    83,    35,    49,
-      50,    51,    52,    53,    54,    55,    56,    20,     6,    22,
-      36,    37,    98,    26,    27,    28,    29,    30,    24,    85,
-      10,    29,    30,    36,    14,    31,    32,    33,    22,    35,
-      32,    35,    26,    27,    28,    29,    30,    26,    27,    28,
-      29,    30,    27,    28,    29,    30,    18,    38,    36,    37,
-       8,    35,    32,    32,    37,     3,    13,    35,    68,    97,
-      79,    43
+        20,    16,    17,    18,    48,     0,     0,    12,    16,     4,
+       5,    48,     7,    33,     9,     8,    36,    85,    18,    16,
+      15,    41,    32,    33,    34,    40,    36,    32,    33,    34,
+      11,    36,    76,    77,    78,    79,    80,    74,    38,    30,
+      35,    35,    33,   111,    15,     6,    17,    24,    68,    93,
+      25,    26,    27,    28,    29,    32,    33,    34,    36,    36,
+      28,    29,    37,    33,    84,    39,    32,    33,    34,    37,
+      36,    86,    25,    26,    27,    28,    29,    10,    37,    38,
+      18,    14,    30,    31,     8,    37,    38,    28,    29,    38,
+      37,    38,   112,    81,    82,    20,    36,    33,    33,    22,
+      37,    13,    36,     3,    64,    37,    75,   111,    -1,    -1,
+      68,    -1,    -1,    -1,    45
   };
 
   /* STOS_[STATE-NUM] -- The (internal number of the) accessing
@@ -1018,17 +1052,18 @@ namespace example
   const unsigned char
   Parser::yystos_[] =
   {
-         0,    40,     0,     4,     5,     7,     9,    15,    34,    41,
-      42,    43,    44,    45,    46,    16,     8,    16,    11,     6,
-      59,     0,    34,    32,    64,    64,    64,    64,    24,    29,
-      31,    32,    33,    35,    49,    50,    51,    61,    62,    35,
-      18,    47,    35,    57,    51,    38,    63,    51,     8,    37,
-      20,    22,    26,    27,    28,    29,    30,    56,    60,    62,
-      51,    58,    62,    17,    45,    53,    32,    36,    52,    64,
-      51,    51,    51,    51,    51,    51,    51,    51,    36,    37,
-      10,    14,    36,    37,    35,    37,    47,    60,    62,    12,
-      54,    55,    61,    64,    13,    48,    36,    37,     3,    55,
-      62
+         0,    41,     0,     4,     5,     7,     9,    15,    35,    42,
+      43,    44,    45,    46,    47,    16,     8,    16,    11,     6,
+      66,     0,    35,    33,    71,    71,    71,    71,    30,    33,
+      50,    51,    69,    36,    18,    48,    36,    64,    39,    70,
+       8,    38,    63,    67,    69,    24,    32,    34,    36,    52,
+      53,    54,    55,    56,    57,    58,    68,    69,    65,    69,
+      17,    46,    60,    33,    59,    71,    69,    37,    38,    10,
+      14,    55,    52,    57,    20,    22,    25,    26,    27,    28,
+      29,    30,    31,    37,    38,    36,    38,    48,    67,    37,
+      37,    52,    53,    36,    57,    57,    57,    57,    57,    58,
+      58,    69,    12,    61,    62,    68,    71,    13,    49,    57,
+      37,    38,     3,    62,    69
   };
 
 #if YYDEBUG
@@ -1039,8 +1074,8 @@ namespace example
   {
          0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
      265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
-     275,   276,   277,   278,   279,   280,   281,    43,    45,    42,
-      47,   282,   283,   284,   285,    40,    41,    44,    46
+     275,   276,   277,   278,   279,    60,    62,    61,    43,    45,
+      42,    47,   280,   281,   282,   283,    40,    41,    44,    46
   };
 #endif
 
@@ -1048,12 +1083,13 @@ namespace example
   const unsigned char
   Parser::yyr1_[] =
   {
-         0,    39,    40,    40,    40,    40,    41,    41,    41,    41,
-      41,    42,    43,    44,    45,    46,    47,    47,    48,    48,
-      49,    49,    50,    50,    51,    51,    51,    51,    51,    51,
-      51,    51,    51,    51,    52,    52,    53,    53,    54,    54,
-      55,    55,    56,    56,    57,    57,    58,    58,    59,    59,
-      60,    60,    61,    61,    61,    62,    63,    63,    64
+         0,    40,    41,    41,    41,    41,    42,    42,    42,    42,
+      42,    43,    44,    45,    46,    47,    48,    48,    49,    49,
+      50,    50,    51,    51,    52,    52,    53,    53,    54,    54,
+      55,    55,    56,    56,    56,    57,    57,    57,    58,    58,
+      58,    59,    59,    60,    60,    61,    61,    62,    62,    63,
+      63,    64,    64,    65,    65,    66,    66,    67,    67,    68,
+      68,    68,    68,    69,    70,    70,    71
   };
 
   /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
@@ -1062,10 +1098,11 @@ namespace example
   {
          0,     2,     0,     2,     3,     3,     1,     1,     1,     1,
        1,     3,     6,     5,     7,     4,     0,     2,     0,     3,
-       1,     1,     1,     3,     1,     3,     3,     3,     3,     3,
-       3,     2,     3,     3,     1,     3,     4,     1,     1,     3,
-       1,     1,     3,     1,     0,     3,     1,     3,     0,     1,
-       2,     2,     1,     1,     1,     2,     0,     2,     1
+       1,     1,     1,     3,     1,     3,     1,     3,     1,     2,
+       1,     3,     3,     3,     3,     1,     3,     3,     1,     3,
+       3,     1,     3,     4,     1,     1,     3,     1,     1,     3,
+       1,     0,     3,     1,     3,     0,     1,     2,     2,     1,
+       1,     1,     3,     2,     0,     2,     1
   };
 
 #if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
@@ -1078,14 +1115,16 @@ namespace example
   "\"DELETE\"", "\"DISTINCT\"", "\"DROP\"", "\"FROM\"", "\"INSERT\"",
   "\"INTEGER\"", "\"INTO\"", "\"NULLX\"", "\"ORDER\"", "\"STR20\"",
   "\"SELECT\"", "\"TABLE\"", "\"VALUES\"", "\"WHERE\"", "\"OR\"", "OR",
-  "\"AND\"", "AND", "\"NOT\"", "NOT", "\"COMPARISON\"", "COMPARISON",
-  "'+'", "'-'", "'*'", "'/'", "\"INTNUM\"", "\"NAME\"", "\"STRING\"",
-  "\"end of line\"", "'('", "')'", "','", "'.'", "$accept", "start",
-  "statement", "drop_table_statement", "create_table_statement",
-  "insert_statement", "select_statement", "delete_statement", "opt_where",
-  "opt_orderby", "select_expr_di_list", "select_expr_list", "expr",
-  "table_references", "values_or_query_spec", "insert_atom_commalist",
-  "insert_atom", "base_table_element_commalist", "opt_column_commalist",
+  "\"AND\"", "AND", "\"NOT\"", "NOT", "'<'", "'>'", "'='", "'+'", "'-'",
+  "'*'", "'/'", "\"INTNUM\"", "\"NAME\"", "\"STRING\"", "\"end of line\"",
+  "'('", "')'", "','", "'.'", "$accept", "start", "statement",
+  "drop_table_statement", "create_table_statement", "insert_statement",
+  "select_statement", "delete_statement", "opt_where", "opt_orderby",
+  "select_expr_di_list", "select_expr_list", "search_condition",
+  "boolean_term", "boolean_factor", "boolean_primary",
+  "comparison_predicate", "expr", "term", "table_references",
+  "values_or_query_spec", "insert_atom_commalist", "insert_atom",
+  "base_table_element_commalist", "opt_column_commalist",
   "column_commalist", "opt_distinct", "base_table_element", "atom",
   "column_ref", "opt_column_ref", "table", 0
   };
@@ -1096,24 +1135,26 @@ namespace example
   const Parser::rhs_number_type
   Parser::yyrhs_[] =
   {
-        40,     0,    -1,    -1,    40,    34,    -1,    40,    41,    34,
-      -1,    40,    41,     0,    -1,    43,    -1,    42,    -1,    44,
-      -1,    45,    -1,    46,    -1,     7,    16,    64,    -1,     4,
-      16,    64,    35,    56,    36,    -1,     9,    11,    64,    57,
-      53,    -1,    15,    59,    49,     8,    52,    47,    48,    -1,
-       5,     8,    64,    47,    -1,    -1,    18,    51,    -1,    -1,
-      13,     3,    62,    -1,    50,    -1,    29,    -1,    51,    -1,
-      50,    37,    51,    -1,    61,    -1,    51,    27,    51,    -1,
-      51,    28,    51,    -1,    51,    29,    51,    -1,    51,    30,
-      51,    -1,    51,    22,    51,    -1,    51,    20,    51,    -1,
-      24,    51,    -1,    51,    26,    51,    -1,    35,    51,    36,
-      -1,    64,    -1,    52,    37,    64,    -1,    17,    35,    54,
-      36,    -1,    45,    -1,    55,    -1,    54,    37,    55,    -1,
-      61,    -1,    12,    -1,    56,    37,    60,    -1,    60,    -1,
-      -1,    35,    58,    36,    -1,    62,    -1,    58,    37,    62,
-      -1,    -1,     6,    -1,    62,    10,    -1,    62,    14,    -1,
-      33,    -1,    31,    -1,    62,    -1,    32,    63,    -1,    -1,
-      38,    32,    -1,    32,    -1
+        41,     0,    -1,    -1,    41,    35,    -1,    41,    42,    35,
+      -1,    41,    42,     0,    -1,    44,    -1,    43,    -1,    45,
+      -1,    46,    -1,    47,    -1,     7,    16,    71,    -1,     4,
+      16,    71,    36,    63,    37,    -1,     9,    11,    71,    64,
+      60,    -1,    15,    66,    50,     8,    59,    48,    49,    -1,
+       5,     8,    71,    48,    -1,    -1,    18,    52,    -1,    -1,
+      13,     3,    69,    -1,    51,    -1,    30,    -1,    69,    -1,
+      51,    38,    69,    -1,    53,    -1,    53,    20,    52,    -1,
+      54,    -1,    54,    22,    53,    -1,    55,    -1,    24,    55,
+      -1,    56,    -1,    36,    52,    37,    -1,    57,    26,    57,
+      -1,    57,    25,    57,    -1,    57,    27,    57,    -1,    58,
+      -1,    57,    28,    57,    -1,    57,    29,    57,    -1,    68,
+      -1,    68,    30,    58,    -1,    68,    31,    58,    -1,    71,
+      -1,    59,    38,    71,    -1,    17,    36,    61,    37,    -1,
+      46,    -1,    62,    -1,    61,    38,    62,    -1,    68,    -1,
+      12,    -1,    63,    38,    67,    -1,    67,    -1,    -1,    36,
+      65,    37,    -1,    69,    -1,    65,    38,    69,    -1,    -1,
+       6,    -1,    69,    10,    -1,    69,    14,    -1,    34,    -1,
+      32,    -1,    69,    -1,    36,    57,    37,    -1,    33,    70,
+      -1,    -1,    39,    33,    -1,    33,    -1
   };
 
   /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
@@ -1123,10 +1164,11 @@ namespace example
   {
          0,     0,     3,     4,     7,    11,    15,    17,    19,    21,
       23,    25,    29,    36,    42,    50,    55,    56,    59,    60,
-      64,    66,    68,    70,    74,    76,    80,    84,    88,    92,
-      96,   100,   103,   107,   111,   113,   117,   122,   124,   126,
-     130,   132,   134,   138,   140,   141,   145,   147,   151,   152,
-     154,   157,   160,   162,   164,   166,   169,   170,   173
+      64,    66,    68,    70,    74,    76,    80,    82,    86,    88,
+      91,    93,    97,   101,   105,   109,   111,   115,   119,   121,
+     125,   129,   131,   135,   140,   142,   144,   148,   150,   152,
+     156,   158,   159,   163,   165,   169,   170,   172,   175,   178,
+     180,   182,   184,   188,   191,   192,   195
   };
 
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
@@ -1134,11 +1176,12 @@ namespace example
   Parser::yyrline_[] =
   {
          0,   128,   128,   129,   130,   131,   135,   136,   137,   138,
-     139,   143,   149,   155,   161,   176,   182,   183,   187,   188,
-     191,   192,   195,   196,   200,   201,   202,   203,   204,   205,
-     206,   207,   208,   209,   212,   213,   217,   218,   222,   223,
-     227,   228,   232,   233,   237,   238,   243,   244,   248,   249,
-     253,   254,   258,   259,   260,   264,   269,   270,   274
+     139,   143,   149,   155,   161,   176,   181,   182,   186,   187,
+     190,   191,   194,   195,   198,   199,   201,   202,   205,   206,
+     209,   210,   213,   214,   215,   218,   219,   220,   224,   225,
+     226,   228,   229,   233,   234,   238,   239,   243,   244,   248,
+     249,   253,   254,   259,   260,   264,   265,   269,   270,   274,
+     275,   276,   277,   281,   286,   287,   291
   };
 
   // Print the state stack on the debug stream.
@@ -1182,9 +1225,9 @@ namespace example
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-      35,    36,    29,    27,    37,    28,    38,    30,     2,     2,
+      36,    37,    30,    28,    38,    29,    39,    31,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+      25,    27,    26,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -1206,7 +1249,7 @@ namespace example
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
-      25,    26,    31,    32,    33,    34
+      32,    33,    34,    35
     };
     if ((unsigned int) t <= yyuser_token_number_max_)
       return translate_table[t];
@@ -1215,20 +1258,20 @@ namespace example
   }
 
   const int Parser::yyeof_ = 0;
-  const int Parser::yylast_ = 111;
-  const int Parser::yynnts_ = 26;
+  const int Parser::yylast_ = 114;
+  const int Parser::yynnts_ = 32;
   const int Parser::yyempty_ = -2;
   const int Parser::yyfinal_ = 2;
   const int Parser::yyterror_ = 1;
   const int Parser::yyerrcode_ = 256;
-  const int Parser::yyntokens_ = 39;
+  const int Parser::yyntokens_ = 40;
 
-  const unsigned int Parser::yyuser_token_number_max_ = 285;
+  const unsigned int Parser::yyuser_token_number_max_ = 283;
   const Parser::token_number_type Parser::yyundef_token_ = 2;
 
 } // namespace example
 
-#line 287 "parser.yy"
+#line 304 "parser.yy"
  /*** Additional Code ***/
 
 void example::Parser::error(const Parser::location_type& l,
