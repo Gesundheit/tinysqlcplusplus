@@ -132,28 +132,28 @@ start: /* empty */
 
 
 statement:
-        create_table_statement											{$$ = $1;}							
-        | drop_table_statement											{$$ = $1;}
-		| insert_statement												{$$ = $1;}
-		| select_statement												{$$ = $1;}
-		| delete_statement												{$$ = $1;}
+        create_table_statement											{$$ = $1;driver.calc.stmt_vector.push_back((tree *)$1);}
+        | drop_table_statement											{$$ = $1;driver.calc.stmt_vector.push_back((tree *)$1);}
+		| insert_statement												{$$ = $1;driver.calc.stmt_vector.push_back((tree *)$1);}
+		| select_statement												{$$ = $1;driver.calc.stmt_vector.push_back((tree *)$1);}
+		| delete_statement												{$$ = $1;driver.calc.stmt_vector.push_back((tree *)$1);}
 		;
 
 drop_table_statement:
 		DROP TABLE table												{printf("DROP TABLE\n");
-																		driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,NULL,NULL,NULL,drop_st) );
+																		$$ =(SQLTree *) driver.calc.aSQLTree->make_stmt((tree *)$3,NULL,NULL,NULL,drop_st);
 																		}
 		;
 
 create_table_statement:
         CREATE TABLE table '(' base_table_element_commalist ')'			{printf("CREATE TABLE\n");																	   
-																		driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,NULL,NULL,create_st) );
+																		$$ = (SQLTree *)driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,NULL,NULL,create_st);
 																		}
         ;
 
 insert_statement: 
  		INSERT INTO table opt_column_commalist values_or_query_spec		{printf("INSERT INTO\n");
-																		driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$4,(tree *)$5,NULL,insert_st) );
+																		$$ = (SQLTree *) driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$4,(tree *)$5,NULL,insert_st);
 																		} 
  		; 
 
@@ -162,19 +162,20 @@ select_statement:
 		FROM table_references 
 		opt_where  
 		opt_orderby 												{printf("SELECT FROM\n"); 																		
-																	/* driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st); */
+
 
 																	if($2==NULL){
-																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st,false) );
+																	$$ = (SQLTree *)driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st,false);
 																	}else{
-																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st,true) );
+																	$$ = (SQLTree *)driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$5,(tree *)$6,(tree *)$7,select_st,true);
 																	}
 		}  
 		;
 
 delete_statement:
 		DELETE FROM table opt_where									{printf("DELETE FROM\n");
-																	driver.calc.stmt_vector.push_back( driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$4,NULL,NULL,delete_st) );} 
+																	$$ = (SQLTree *)driver.calc.aSQLTree->make_stmt((tree *)$3,(tree *)$4,NULL,NULL,delete_st);
+																	}
 		;
 
 opt_where: /* empty */												{$$=NULL;}
@@ -277,17 +278,17 @@ atom:
 	;
 
 column_ref: 
-		NAME opt_column_ref											{printf("NAME\n");$$=(SQLTree *)driver.calc.aSQLTree->make_colref(*$1,(tree *)$2);}
+		NAME opt_column_ref											{$$=(SQLTree *)driver.calc.aSQLTree->make_colref(*$1,(tree *)$2);}
 		;
 
 
 
 opt_column_ref: /* empty*/											{$$=NULL;}
-		|'.'NAME													{printf(".NAME\n");$$=(SQLTree *)driver.calc.aSQLTree->make_variable(*$2);}
+		|'.'NAME													{$$=(SQLTree *)driver.calc.aSQLTree->make_variable(*$2);}
 		; 
 
 table:
-		NAME														{std::cout<<*$1;std::cout<<"\n";$$ = (SQLTree *)driver.calc.aSQLTree->make_variable(*$1);}							  									
+		NAME														{$$ = (SQLTree *)driver.calc.aSQLTree->make_variable(*$1);}							  									
 		;
 
 

@@ -75,7 +75,7 @@ namespace example {
 					break;
 				}
 				case delete_st:{
-					run_delete(stmtNo,schemaMgr,mem);
+					run_delete(stmtNo,schemaMgr,mem,relationFieldMap);
 					break;
 				   }
 
@@ -183,7 +183,7 @@ namespace example {
 		return true;
 	}
 
-	bool Driver::run_delete(int stmtNo, SchemaManager &schemaMgr, MainMemory &mem){
+	bool Driver::run_delete(int stmtNo, SchemaManager &schemaMgr, MainMemory &mem,map <string,vector<string>> relationFieldMap){
 		printf("run_delete\n");
 
 		if(calc.stmt_vector[stmtNo]->body.stmt.arg2 == NULL){
@@ -221,24 +221,54 @@ namespace example {
 				}
 			}
 			vector<Tuple>* targetTuples = delete_by_node(calc.stmt_vector[stmtNo]->body.stmt.arg2,totalTuples,schema);
+			map<string,vector<string>>::iterator it = relationFieldMap.find(calc.stmt_vector[stmtNo]->body.stmt.arg1->body.variable);
 
-			//examine tuples in each block, if find matching targetTuples, delete
+
+
 			for (ct=0;ct<relationPtr->getNumOfBlocks();ct++) {
-				relationPtr->readBlockToMemory(ct,0);
+			//pull each block to memory, examine, if not matching target, store.
+			//remove the block, wrtie the store back
+				vector<Tuple> newTuples;
 				Block* block=mem.getBlock(0);
-				vector<Tuple> tuples=block->getTuples();
+				block->clear();
+				relationPtr->readBlockToMemory(ct,0);
+				block=mem.getBlock(0);
+				vector<Tuple> tuplesOfBlock=block->getTuples();
 				int ct2;
-				for(ct2;ct2<tuples.size();ct2++){
+				for(ct2=0;ct2<tuplesOfBlock.size();ct2++){
 					int ct3;
-					for(ct3;ct3<targetTuples->size();ct3++){
-//						if( (Tuple)targetTuples->at(ct3).getString() != NULL ){
-//							cout<< (Tuple)targetTuples->at(ct3).getString() << endl;
-//					}
+					int found=0;
+					int ct4;
+					// compare with targetTuples
+					for(ct3=0;ct3<targetTuples->size();ct3++){
+						for(ct4=0;ct4<it->second.size();ct4++){
+							if(tuplesOfBlock.at(ct2).getInt(schema->getFieldPos(it->second.at(ct4)))==0){
+								// Not a number field, getString
+								if( tuplesOfBlock.at(ct2).getString(schema->getFieldPos(it->second.at(ct4))) ==
+									targetTuples->at(ct3).getString(schema->getFieldPos(it->second.at(ct4))) ){
+										found++;
+								}
+							}else{
+								if( tuplesOfBlock.at(ct2).getInt(schema->getFieldPos(it->second.at(ct4))) ==
+									targetTuples->at(ct3).getInt(schema->getFieldPos(it->second.at(ct4)))){
+										found++;
+								}
+							}
+						}
+						if(found!=0){break;}
 					}
+					if(found==0){newTuples.push_back(tuplesOfBlock.at(ct2));}
 				}
+
+				block->clear();
+				for(int ct5=0;ct5<newTuples.size();ct5++){
+					block->appendTuple(((Tuple)newTuples.at(ct5)));
+				}
+				relationPtr->writeBlockFromMemory(ct,0);
+				relationPtr->printRelation();
 			}
 
-		}
+		}	   
 		return true;
 	}
 	
@@ -354,6 +384,14 @@ namespace example {
 					printf("%d\n",i);
 					vector<Tuple> *r = new vector<Tuple>;
 					int ct;
+					// find tuple(s) that would match condition
+					for(ct=0;ct<origSet.size();ct++){
+						if(i == ((Tuple)origSet.at(ct)).getInt(
+						schema->getFieldPos(node->body.expr.arg1->body.colref.arg1)) ){
+							r->push_back(origSet.at(ct));
+						}
+					}
+					return r;
 			} else if(node->body.expr.arg1->nodetype==number_node &&
 				node->body.expr.arg2->nodetype==number_node){
 					// not handling for now
