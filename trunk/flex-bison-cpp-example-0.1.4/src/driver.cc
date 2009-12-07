@@ -9,6 +9,8 @@
 #include<string.h>
 #include <algorithm>
 #include <map>
+#include <set>
+#include <vector>
 
 using namespace std;
 
@@ -36,17 +38,12 @@ namespace example {
 
 
 		Schema* schema = NULL;
-		//schema = schemaMgr.getSchema( calc.stmt_vector[stmtNo]->body.stmt.arg1->body.variable );
-		//if(schema == NULL){
-		//	return false;
-		//}	
 
 		// Set up relationPtr
 		Relation* relationPtr = NULL;
-		//relationPtr = schemaMgr.getRelation( calc.stmt_vector[stmtNo]->body.stmt.arg1->body.variable);
-		//if(relationPtr==NULL){
-		//	return false;
-		//}
+
+		// Set up relationFieldMap;
+		map <string,vector<string>> relationFieldMap;
 
 		bool r = false;
 		streamname = sname;
@@ -66,7 +63,7 @@ namespace example {
 		for(stmtNo=0;stmtNo<calc.stmt_vector.size();stmtNo++){
 			switch (calc.stmt_vector[stmtNo]->body.stmt.type){
 				case create_st:{
-					run_create(stmtNo,schemaMgr);
+					run_create(stmtNo,schemaMgr,relationFieldMap);
 					break;
 				   }
 				case insert_st:{
@@ -85,9 +82,11 @@ namespace example {
 			}
 		}
 
+		//relationFieldMap test
+		//map<string,vector<string>>::iterator it;
+		//it= relationFieldMap.find("school");
 
 		//Observe the tree here by setting break
-
 		return r;
 	}
 
@@ -123,7 +122,7 @@ namespace example {
 		}
 	}
 
-	bool Driver::run_create(int stmtNo, SchemaManager &schemaMgr){
+	bool Driver::run_create(int stmtNo, SchemaManager &schemaMgr,map<string,vector<string>> &relationFieldMap){
 		printf("run_create called\n");
 
 		// Create a schema
@@ -140,6 +139,9 @@ namespace example {
 			printf("Cannot create a relation with zero fields\n");
 			return false;
 		}else{
+			// Create Mapping for Select
+			relationFieldMap.insert(pair<string,vector<string>>(relationName,fieldNames));
+
 			Schema schema(fieldNames,fieldTypes);
 			// Print the information about the schema
 			schema.printSchema();
@@ -204,23 +206,37 @@ namespace example {
 			printf("has argue\n");
 			// Obtain all tuples of this relation
 			Relation* relationPtr = schemaMgr.getRelation( calc.stmt_vector[stmtNo]->body.stmt.arg1->body.variable);
+			Schema* schema = schemaMgr.getSchema( calc.stmt_vector[stmtNo]->body.stmt.arg1->body.variable );
 			if(relationPtr->getNumOfBlocks()==NULL){
 				return false;
 			}
 			int ct;
-			vector<Tuple> totaltuples;
+			vector<Tuple> totalTuples;
 			for(ct=0;ct<relationPtr->getNumOfBlocks();ct++){
 				relationPtr->readBlockToMemory(ct,0);
 				Block* block=mem.getBlock(0);
 				vector<Tuple> tuples=block->getTuples();
 				for(int ct2=0;ct2<tuples.size();ct2++){
-					totaltuples.push_back(tuples.at(ct2));
+					totalTuples.push_back(tuples.at(ct2));
 				}
 			}
+			vector<Tuple>* targetTuples = delete_by_node(calc.stmt_vector[stmtNo]->body.stmt.arg2,totalTuples,schema);
 
-
-
-
+			//examine tuples in each block, if find matching targetTuples, delete
+			for (ct=0;ct<relationPtr->getNumOfBlocks();ct++) {
+				relationPtr->readBlockToMemory(ct,0);
+				Block* block=mem.getBlock(0);
+				vector<Tuple> tuples=block->getTuples();
+				int ct2;
+				for(ct2;ct2<tuples.size();ct2++){
+					int ct3;
+					for(ct3;ct3<targetTuples->size();ct3++){
+						if( (Tuple)targetTuples->at(ct3).getString() != NULL ){
+							cout<< (Tuple)targetTuples->at(ct3).getString() << endl;
+						}
+					}
+				}
+			}
 
 		}
 		return true;
@@ -306,28 +322,44 @@ namespace example {
 		return true;
 	}
 
-	vector<Tuple>* Driver::delete_by_node(tree* node,vector<Tuple> origSet){
-		if(node!=NULL){
-			if(node->body.list.arg1==NULL && node->body.list.arg2==NULL){
+	vector<Tuple>* Driver::delete_by_node(tree* node,vector<Tuple> origSet,Schema* schema){
+		if(node!=NULL){			if(node->body.list.arg1==NULL && node->body.list.arg2==NULL){
 				return NULL;
 			} else if(node->body.expr.arg1->nodetype==colref_node && 
 				node->body.expr.arg2->nodetype==literal_node){
+					string s;
+					s = string((const char*)node->body.expr.arg2->body.variable);
+					s.erase(
+						remove(s.begin(),s.end(),'\"'),s.end()
+						);
+					//cout << s <<endl;
 					vector<Tuple> *r = new vector<Tuple>;
 					int ct;
+
+					// find tuple(s) that would match condition
 					for(ct=0;ct<origSet.size();ct++){
-
+						//cout << ((Tuple)origSet.at(ct)).getString(
+						//schema->getFieldPos(node->body.expr.arg1->body.colref.arg1) )
+						//<< endl;
+						if(s == ((Tuple)origSet.at(ct)).getString(
+						schema->getFieldPos(node->body.expr.arg1->body.colref.arg1)) ){
+							r->push_back(origSet.at(ct));
+						}
 					}
-
-					//r->push_back();
 					return r;
-
 			} else if(node->body.expr.arg1->nodetype==colref_node &&
 				node->body.expr.arg2->nodetype==number_node){
+					int i;
+					i = node->body.expr.arg2->body.number;
+					printf("%d\n",i);
+					vector<Tuple> *r = new vector<Tuple>;
+					int ct;
 			} else if(node->body.expr.arg1->nodetype==number_node &&
 				node->body.expr.arg2->nodetype==number_node){
 					// not handling for now
 			} else{
-
+				delete_by_node(node->body.expr.arg1,origSet,schema);
+				delete_by_node(node->body.expr.arg2,origSet,schema);
 			}
 		}
 		return NULL;
