@@ -231,9 +231,9 @@ namespace example {
 				for(ct2;ct2<tuples.size();ct2++){
 					int ct3;
 					for(ct3;ct3<targetTuples->size();ct3++){
-						if( (Tuple)targetTuples->at(ct3).getString() != NULL ){
-							cout<< (Tuple)targetTuples->at(ct3).getString() << endl;
-						}
+//						if( (Tuple)targetTuples->at(ct3).getString() != NULL ){
+//							cout<< (Tuple)targetTuples->at(ct3).getString() << endl;
+//					}
 					}
 				}
 			}
