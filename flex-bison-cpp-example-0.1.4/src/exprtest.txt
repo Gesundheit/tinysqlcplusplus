@@ -12,4 +12,4 @@ INSERT INTO school (addr,id,name) VALUES ("123 drive",8,"mg")
 INSERT INTO school (addr,id,name) VALUES ("123 drive",9,"fn")
 INSERT INTO school (addr,id,name) VALUES ("123 drive",10,"pl")
 INSERT INTO school (addr,id,name) VALUES ("456 drive",11,"lw")
-DELETE FROM school WHERE id = 7
+DELETE FROM school WHERE id < 7
