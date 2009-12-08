@@ -381,15 +381,34 @@ namespace example {
 				node->body.expr.arg2->nodetype==number_node){
 					int i;
 					i = node->body.expr.arg2->body.number;
-					printf("%d\n",i);
+					printf("condition number %d\n",i);
 					vector<Tuple> *r = new vector<Tuple>;
 					int ct;
-					// find tuple(s) that would match condition
-					for(ct=0;ct<origSet.size();ct++){
-						if(i == ((Tuple)origSet.at(ct)).getInt(
-						schema->getFieldPos(node->body.expr.arg1->body.colref.arg1)) ){
-							r->push_back(origSet.at(ct));
-						}
+
+					if(node->body.expr.op[0] == '='){
+							// find tuple(s) that would match condition
+							for(ct=0;ct<origSet.size();ct++){
+								if(i == ((Tuple)origSet.at(ct)).getInt(
+									schema->getFieldPos(node->body.expr.arg1->body.colref.arg1)) ){
+										r->push_back(origSet.at(ct));
+								}
+							}
+					}else if(node->body.expr.op[0] == '<'){
+							// find tuple(s) that would match condition
+							for(ct=0;ct<origSet.size();ct++){
+								if(i <= ((Tuple)origSet.at(ct)).getInt(
+									schema->getFieldPos(node->body.expr.arg1->body.colref.arg1)) ){
+										r->push_back(origSet.at(ct));
+								}
+							}
+					}else if(node->body.expr.op[0] == '>'){
+							// find tuple(s) that would match condition
+							for(ct=0;ct<origSet.size();ct++){
+								if(i >= ((Tuple)origSet.at(ct)).getInt(
+									schema->getFieldPos(node->body.expr.arg1->body.colref.arg1)) ){
+										r->push_back(origSet.at(ct));
+								}
+							}
 					}
 					return r;
 			} else if(node->body.expr.arg1->nodetype==number_node &&
