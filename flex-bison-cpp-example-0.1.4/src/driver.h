@@ -73,6 +73,14 @@ public:
      */
 	bool run_delete(int stmtNo, SchemaManager &schemaMgr, MainMemory &mem,map<string,vector<string>> relationFieldMap);
 
+    /** DB Project: run drop statement, modify virtual disk.
+     * @param stmtNo	
+     * @param schemaMgr
+	 * @param mem
+     * @return		true if successfully put
+     */
+	bool run_drop(int stmtNo, SchemaManager &schemaMgr,MainMemory &mem);
+
 	/** DB Project: run select statement, put schema into virtual.
      * @param stmtNo	
      * @param schemaMgr
