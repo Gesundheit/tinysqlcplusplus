@@ -78,6 +78,10 @@ namespace example {
 					run_delete(stmtNo,schemaMgr,mem,relationFieldMap);
 					break;
 				   }
+				case drop_st:{
+					run_drop(stmtNo,schemaMgr,mem);
+					break;
+				   }
 
 			}
 		}
@@ -120,6 +124,17 @@ namespace example {
 
 			}
 		}
+	}
+
+	bool Driver::run_drop(int stmtNo, SchemaManager &schemaMgr, MainMemory &mem){
+		
+		string relationName(calc.stmt_vector[stmtNo]->body.stmt.arg1->body.variable);	
+		schemaMgr.deleteRelation(relationName);
+		if(schemaMgr.getRelation(relationName) == NULL){
+			printf("Relation dropped\n");
+		}
+
+		return true;
 	}
 
 	bool Driver::run_create(int stmtNo, SchemaManager &schemaMgr,map<string,vector<string>> &relationFieldMap){
@@ -180,6 +195,12 @@ namespace example {
 		else{
 			cout<<"No condition"<<endl;
 		}
+
+		// single or multi relation, call appropriate, return resulting bags to memory, if appropriate	   
+
+		// apply distinct or order by, if appropriate
+		
+
 		return true;
 	}
 
