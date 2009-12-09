@@ -86,7 +86,7 @@ public:
      * @param schemaMgr
      * @return		true if successfully executed
      */
-	bool run_select(int stmtNo, SchemaManager &schemaMgr);
+	bool run_select(int stmtNo, SchemaManager &schemaMgr,MainMemory &mem,map <string,vector<string>> relationFieldMap);
 
     /** Invoke the scanner and parser for a stream.
      * @param in	input stream
