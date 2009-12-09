@@ -158,12 +158,13 @@ namespace example {
 			relationFieldMap.insert(pair<string,vector<string>>(relationName,fieldNames));
 
 			Schema schema(fieldNames,fieldTypes);
+
 			// Print the information about the schema
-			schema.printSchema();
-			cout << "The schema before createRelation has " << schema.getNumOfFields() << " fields" << endl;
-			cout << "The schema before createRelation has " << schema.getNumOfInt() << " integers" << endl;
-			cout << "The schema before createRelation has " << schema.getNumOfString() << " strings" << endl;
-			cout << "The schema before createRelation allows " << schema.getTuplesPerBlock() << " tuples per block" << endl;
+			//schema.printSchema();
+			//cout << "The schema before createRelation has " << schema.getNumOfFields() << " fields" << endl;
+			//cout << "The schema before createRelation has " << schema.getNumOfInt() << " integers" << endl;
+			//cout << "The schema before createRelation has " << schema.getNumOfString() << " strings" << endl;
+			//cout << "The schema before createRelation allows " << schema.getTuplesPerBlock() << " tuples per block" << endl;
 
 			
 			schemaMgr.createRelation(relationName,schema);
@@ -187,6 +188,34 @@ namespace example {
 
 		get_relations(stmtNo, relations,attributes_to_project);			
 		if(relations->size()<2){
+
+			// read all tutples from disk to mem, then to a vector, this is to prepare for NOT, OrderBy, and DISTINCT
+			Relation* relationPtr = schemaMgr.getRelation( relations->at(0) );
+			Schema* schema = schemaMgr.getSchema( relations->at(0) );
+			if(relationPtr->getNumOfBlocks()==NULL){
+				return false;
+			}
+			int ct;
+			vector<Tuple> totalTuples;
+			for(ct=0;ct<relationPtr->getNumOfBlocks();ct++){
+				relationPtr->readBlockToMemory(ct,0);
+				Block* block=mem.getBlock(0);
+				vector<Tuple> tuples=block->getTuples();
+				for(int ct2=0;ct2<tuples.size();ct2++){
+					totalTuples.push_back(tuples.at(ct2));
+				}
+			}
+
+			//if no condition, apply OrderBy and DISTINCT here, then print
+			if(calc.stmt_vector[stmtNo]->body.stmt.arg3== NULL){
+				//apply OrderBy
+				//apply DISTINCT
+				//print function, based on the projected column(s)
+				return true;
+			}
+
+			vector<Tuple>*resultTuples = select_by_node_single_relation(calc.stmt_vector[stmtNo]->body.stmt.arg3,totalTuples,schema);
+
 
 		}else{
 			vector<column_ref> *columns  = new vector<column_ref>;
@@ -247,8 +276,6 @@ namespace example {
 			vector<Tuple>* targetTuples = delete_by_node(calc.stmt_vector[stmtNo]->body.stmt.arg2,totalTuples,schema);
 			map<string,vector<string>>::iterator it = relationFieldMap.find(calc.stmt_vector[stmtNo]->body.stmt.arg1->body.variable);
 
-
-
 			for (ct=0;ct<relationPtr->getNumOfBlocks();ct++) {
 			//pull each block to memory, examine, if not matching target, store.
 			//remove the block, wrtie the store back
@@ -296,6 +323,13 @@ namespace example {
 		return true;
 	}
 	
+	void Driver::print_select_single(vector<Tuple> resultTuples,vector<string>fields,map <string,vector<string>> relationFieldMap){
+
+
+
+		return;
+	}
+
 	bool Driver::run_insert(int stmtNo, SchemaManager &schemaMgr, MainMemory &mem){
 
 		// Always use memory_index 0 to insert, clear whatever is there
@@ -441,6 +475,76 @@ namespace example {
 			} else{
 				delete_by_node(node->body.expr.arg1,origSet,schema);
 				delete_by_node(node->body.expr.arg2,origSet,schema);
+			}
+		}
+		return NULL;
+	}
+
+	vector<Tuple>* Driver::select_by_node_single_relation(tree* node,vector<Tuple> origSet,Schema* schema){
+		if(node!=NULL){			if(node->body.list.arg1==NULL && node->body.list.arg2==NULL){
+				return NULL;
+			} else if(node->body.expr.arg1->nodetype==colref_node && 
+				node->body.expr.arg2->nodetype==literal_node){
+					string s;
+					s = string((const char*)node->body.expr.arg2->body.variable);
+					s.erase(
+						remove(s.begin(),s.end(),'\"'),s.end()
+						);
+					//cout << s <<endl;
+					vector<Tuple> *r = new vector<Tuple>;
+					int ct;
+
+					// find tuple(s) that would match condition
+					for(ct=0;ct<origSet.size();ct++){
+						//cout << ((Tuple)origSet.at(ct)).getString(
+						//schema->getFieldPos(node->body.expr.arg1->body.colref.arg1) )
+						//<< endl;
+						if(s == ((Tuple)origSet.at(ct)).getString(
+						schema->getFieldPos(node->body.expr.arg1->body.colref.arg1)) ){
+							r->push_back(origSet.at(ct));
+						}
+					}
+					return r;
+			} else if(node->body.expr.arg1->nodetype==colref_node &&
+				node->body.expr.arg2->nodetype==number_node){
+					int i;
+					i = node->body.expr.arg2->body.number;
+					printf("condition number %d\n",i);
+					vector<Tuple> *r = new vector<Tuple>;
+					int ct;
+
+					if(node->body.expr.op[0] == '='){
+							// find tuple(s) that would match condition
+							for(ct=0;ct<origSet.size();ct++){
+								if(i == ((Tuple)origSet.at(ct)).getInt(
+									schema->getFieldPos(node->body.expr.arg1->body.colref.arg1)) ){
+										r->push_back(origSet.at(ct));
+								}
+							}
+					}else if(node->body.expr.op[0] == '<'){
+							// find tuple(s) that would match condition
+							for(ct=0;ct<origSet.size();ct++){
+								if(i > ((Tuple)origSet.at(ct)).getInt(
+									schema->getFieldPos(node->body.expr.arg1->body.colref.arg1)) ){
+										r->push_back(origSet.at(ct));
+								}
+							}
+					}else if(node->body.expr.op[0] == '>'){
+							// find tuple(s) that would match condition
+							for(ct=0;ct<origSet.size();ct++){
+								if(i < ((Tuple)origSet.at(ct)).getInt(
+									schema->getFieldPos(node->body.expr.arg1->body.colref.arg1)) ){
+										r->push_back(origSet.at(ct));
+								}
+							}
+					}
+					return r;
+			} else if(node->body.expr.arg1->nodetype==number_node &&
+				node->body.expr.arg2->nodetype==number_node){
+					// not handling for now
+			} else{
+				select_by_node_single_relation(node->body.expr.arg1,origSet,schema);
+				select_by_node_single_relation(node->body.expr.arg2,origSet,schema);
 			}
 		}
 		return NULL;
