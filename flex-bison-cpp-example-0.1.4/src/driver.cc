@@ -71,7 +71,7 @@ namespace example {
 					break;
 				}
 			   	case select_st:{
-					run_select(stmtNo,schemaMgr);
+					run_select(stmtNo,schemaMgr,mem,relationFieldMap);
 					break;
 				}
 				case delete_st:{
@@ -181,23 +181,26 @@ namespace example {
 		return true;
 	}
 
-	bool Driver::run_select(int stmtNo, SchemaManager &schemaMgr){
+	bool Driver::run_select(int stmtNo, SchemaManager &schemaMgr,MainMemory &mem,map <string,vector<string>> relationFieldMap){
 		vector<string> *relations  = new vector<string>;
 		std::map<string,std::vector<column_ref>*> *attributes_to_project = new std::map<string,std::vector<column_ref>*>;
-		get_relations(stmtNo, relations,attributes_to_project);	
 
-		vector<column_ref> *columns  = new vector<column_ref>;
-		get_columns(relations,stmtNo, schemaMgr, columns, attributes_to_project);
-		
-		if(calc.stmt_vector[stmtNo]->body.stmt.arg3!=NULL){
-			process_condition(relations, stmtNo, schemaMgr, calc.stmt_vector[stmtNo]->body.stmt.arg3, attributes_to_project);
-		}
-		else{
-			cout<<"No condition"<<endl;
+		get_relations(stmtNo, relations,attributes_to_project);			
+		if(relations->size()<2){
+
+		}else{
+			vector<column_ref> *columns  = new vector<column_ref>;
+			get_columns(relations,stmtNo, schemaMgr, columns, attributes_to_project);
+
+			if(calc.stmt_vector[stmtNo]->body.stmt.arg3!=NULL){
+				process_condition(relations, stmtNo, schemaMgr, calc.stmt_vector[stmtNo]->body.stmt.arg3, attributes_to_project);
+			}
+			else{
+				cout<<"No condition"<<endl;
+			}
 		}
 
 		// single or multi relation, call appropriate, return resulting bags to memory, if appropriate	   
-
 		// apply distinct or order by, if appropriate
 		
 
