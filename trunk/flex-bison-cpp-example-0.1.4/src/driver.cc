@@ -522,26 +522,40 @@ namespace example {
 			if(arg1->nodetype==colref_node) {
 				column_ref cr;
 				if(arg1->body.colref.arg2==NULL){						
-					cr.column_name = arg1->body.colref.arg1;	
-					(*attributes_to_project)[total_relations->front()]->push_back(cr);
+					cr.column_name = arg1->body.colref.arg1;
+					cr.relation_name = new char();
+					std::strcpy(cr.relation_name,total_relations->front().c_str());
 				}
 				else {
 					cr.column_name = arg1->body.colref.arg2->body.variable;
 					cr.relation_name = arg1->body.colref.arg1;
-					(*attributes_to_project)[cr.relation_name]->push_back(cr);
+				}
+				if ( (*attributes_to_project)[cr.relation_name]->size()!=0) { 
+					vector<column_ref> *cols= (*attributes_to_project)[cr.relation_name];
+					vector<column_ref>::iterator pos = std::find(cols->begin(),cols->end(),cr);
+					if(pos==cols->end()){
+						(*attributes_to_project)[cr.relation_name]->push_back(cr);
+					}
 				}
 				condition_relations1.push_back(cr.relation_name);
 			}
 			if(arg2->nodetype==colref_node) {
 				column_ref cr;
 				if(arg2->body.colref.arg2==NULL){						
-					cr.column_name = arg2->body.colref.arg1;	
-					(*attributes_to_project)[total_relations->front()]->push_back(cr);
+					cr.column_name = arg2->body.colref.arg1;
+					cr.relation_name = new char();
+					std::strcpy(cr.relation_name,total_relations->front().c_str());
 				}
 				else {
 					cr.column_name = arg2->body.colref.arg2->body.variable;
 					cr.relation_name = arg2->body.colref.arg1;
-					(*attributes_to_project)[cr.relation_name]->push_back(cr);
+				}
+				if ((*attributes_to_project)[cr.relation_name]->size()) { 
+					vector<column_ref> *cols= (*attributes_to_project)[cr.relation_name];
+					vector<column_ref>::iterator pos = std::find(cols->begin(),cols->end(),cr);
+					if(pos==cols->end()){
+						(*attributes_to_project)[cr.relation_name]->push_back(cr);
+					}
 				}
 				condition_relations2.push_back(cr.relation_name);
 			}
@@ -611,13 +625,19 @@ namespace example {
 
 	void Driver::get_columns(const vector<string> *total_relations, const int stmtNo, SchemaManager &schemaMgr, 
 							vector<column_ref> *columns, std::map<string,std::vector<column_ref>*> *attributes_to_project){
+		if(calc.stmt_vector[stmtNo]->body.stmt.arg1->nodetype==variable_node && 
+				std::strcmp(calc.stmt_vector[stmtNo]->body.stmt.arg1->body.variable,"*")==0){
+			return;
+		}		
 		tree *columns_list = (tree*)calc.stmt_vector[stmtNo]->body.stmt.arg1->body.list.arg1;
 	    tree *column      = (tree*)calc.stmt_vector[stmtNo]->body.stmt.arg1->body.list.arg2;
 		column_ref cr;
+
 		while(column!=NULL){			
 			if(column->body.colref.arg2==NULL){
 				cr.column_name = column->body.colref.arg1;
-				cr.relation_name = NULL;
+				cr.relation_name = new char();
+				std::strcpy(cr.relation_name,total_relations->front().c_str());
 				cout<<"column: "<<cr.column_name<<endl;
 				(*attributes_to_project)[total_relations->front()]->push_back(cr);
 			}
@@ -638,7 +658,8 @@ namespace example {
 		}
 		if(columns_list->body.colref.arg2==NULL){
 			cr.column_name = columns_list->body.colref.arg1;
-			cr.relation_name = NULL;
+			cr.relation_name = new char();
+			std::strcpy(cr.relation_name,total_relations->front().c_str());
 			cout<<"column: "<<cr.column_name<<endl;
 			(*attributes_to_project)[total_relations->front()]->push_back(cr);
 

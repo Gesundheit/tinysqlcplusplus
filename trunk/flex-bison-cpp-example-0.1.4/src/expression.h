@@ -50,9 +50,15 @@ typedef struct tree_t {
 } tree;
 
 
-typedef struct colomn_ref_t {
+typedef struct column_ref_t {
 	char *relation_name;
 	char *column_name;
+	bool operator==(const column_ref_t &other) const {
+		if (relation_name!=0 && column_name!=0) {
+			return std::strcmp(relation_name, other.relation_name)==0 && std::strcmp(column_name, other.column_name)==0;
+		}
+
+	}
 }column_ref;
 
 typedef struct join_node_t {
