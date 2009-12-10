@@ -6,10 +6,10 @@ INSERT INTO school (addr,id,name) VALUES ("123 drive",2,"ee")
 INSERT INTO school (addr,id,name) VALUES ("123 drive",3,"me")
 INSERT INTO school (addr,id,name) VALUES ("123 drive",4,"ae")
 INSERT INTO school (addr,id,name) VALUES ("123 drive",5,"ne")
-INSERT INTO school (addr,id,name) VALUES ("123 drive",6,"ce")
+INSERT INTO school (addr,id,name) VALUES ("456 drive",5,"ce")
 INSERT INTO school (addr,id,name) VALUES ("123 drive",7,"bs")
 INSERT INTO school (addr,id,name) VALUES ("123 drive",8,"mg")
 INSERT INTO school (addr,id,name) VALUES ("123 drive",9,"fn")
 INSERT INTO school (addr,id,name) VALUES ("123 drive",10,"pl")
 INSERT INTO school (addr,id,name) VALUES ("456 drive",11,"lw")
-SELECT school.addr, school.id, school.name FROM school WHERE addr="456 drive"
+SELECT school.addr, school.id, school.name FROM school WHERE addr="123 drive" AND id=5

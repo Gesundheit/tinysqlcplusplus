@@ -214,7 +214,12 @@ namespace example {
 				return true;
 			}
 
-			vector<Tuple>*resultTuples = select_by_node_single_relation(calc.stmt_vector[stmtNo]->body.stmt.arg3,totalTuples,schema);
+			vector<Tuple>*resultTuples = select_by_node_single_relation(calc.stmt_vector[stmtNo]->body.stmt.arg3,totalTuples,schema,relationFieldMap,stmtNo);
+			cout << resultTuples->size() << endl;
+
+
+
+
 
 
 		}else{
@@ -475,12 +480,13 @@ namespace example {
 			} else{
 				delete_by_node(node->body.expr.arg1,origSet,schema);
 				delete_by_node(node->body.expr.arg2,origSet,schema);
+				// not handling for now
 			}
 		}
 		return NULL;
 	}
 
-	vector<Tuple>* Driver::select_by_node_single_relation(tree* node,vector<Tuple> origSet,Schema* schema){
+	vector<Tuple>* Driver::select_by_node_single_relation(tree* node,vector<Tuple> origSet,Schema* schema,	map <string,vector<string>> relationFieldMap,int stmtNo){
 		if(node!=NULL){			if(node->body.list.arg1==NULL && node->body.list.arg2==NULL){
 				return NULL;
 			} else if(node->body.expr.arg1->nodetype==colref_node && 
@@ -543,8 +549,44 @@ namespace example {
 				node->body.expr.arg2->nodetype==number_node){
 					// not handling for now
 			} else{
-				select_by_node_single_relation(node->body.expr.arg1,origSet,schema);
-				select_by_node_single_relation(node->body.expr.arg2,origSet,schema);
+				vector<Tuple>* leftNode = select_by_node_single_relation(node->body.expr.arg1,origSet,schema,relationFieldMap,stmtNo);
+				vector<Tuple>* rightNode  = select_by_node_single_relation(node->body.expr.arg2,origSet,schema,relationFieldMap,stmtNo);
+
+				vector<Tuple> *r = new vector<Tuple>;
+				map<string,vector<string>>::iterator it = relationFieldMap.find(calc.stmt_vector[stmtNo]->body.stmt.arg2->body.list.arg1->body.variable);
+				if(node->body.expr.op[0] == 'A'){
+					int ct2;
+					for(ct2=0;ct2<leftNode->size();ct2++){
+						int ct3;
+						int found;
+						int ct4;
+						// take leftNode, compare with rightNode
+						for(ct3=0;ct3<rightNode->size();ct3++){
+							found=it->second.size();
+							for(ct4=0;ct4<it->second.size();ct4++){
+								if(leftNode->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4)))==0){
+									// Not a number field, getString
+									if( leftNode->at(ct2).getString(schema->getFieldPos(it->second.at(ct4))) ==
+										rightNode->at(ct3).getString(schema->getFieldPos(it->second.at(ct4))) ){
+											found--;
+									}
+								}else{
+									if( leftNode->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4))) ==
+										rightNode->at(ct3).getInt(schema->getFieldPos(it->second.at(ct4)))){
+											found--;
+									}
+								}
+							}
+							// match found
+							if(found==0){r->push_back(leftNode->at(ct2));}						
+						}
+					}
+					return r;
+				}else if(node->body.expr.op[0] == 'O'){
+
+				}else if(node->body.expr.op[0] == 'N'){
+
+				}
 			}
 		}
 		return NULL;
