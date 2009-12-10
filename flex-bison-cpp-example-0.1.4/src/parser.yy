@@ -203,7 +203,7 @@ boolean_term: boolean_factor
 		;
 
 boolean_factor: boolean_primary										{$$=$1;}
-		| NOT boolean_primary										{printf("NOT\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$2,NULL,NULL,not);} 
+		| NOT boolean_primary										{printf("NOT\n"); $$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$2,NULL,"",not);} 
 		;
 
 boolean_primary: comparison_predicate								{$$=$1;}

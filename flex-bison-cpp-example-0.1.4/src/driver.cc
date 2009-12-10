@@ -714,7 +714,7 @@ namespace example {
 
 				vector<Tuple> *r = new vector<Tuple>;
 				map<string,vector<string>>::iterator it = relationFieldMap.find(calc.stmt_vector[stmtNo]->body.stmt.arg2->body.list.arg1->body.variable);
-				if(node->body.expr.op[0] == 'A'){
+				if(node->body.expr.type==binary && node->body.expr.op[0] == 'A'){
 					int ct2;
 					for(ct2=0;ct2<leftNode->size();ct2++){
 						int ct3;
@@ -742,39 +742,68 @@ namespace example {
 						}
 					}
 					return r;
-				}else if(node->body.expr.op[0] == 'O'){
+				}else if(node->body.expr.type==binary && node->body.expr.type==binary && node->body.expr.op[0] == 'O'){
 					for(int ct=0;ct<leftNode->size();ct++){
 						r->push_back(leftNode->at(ct));
 					}
 					int ct2;
 					for(ct2=0;ct2<leftNode->size();ct2++){
-					int ct3;
-					int found;
-					int ct4;
-					// take leftNode, compare with rightNode
-					for(ct3=0;ct3<rightNode->size();ct3++){
-						found=it->second.size();
-						for(ct4=0;ct4<it->second.size();ct4++){
-							if(leftNode->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4)))==0){
-								// Not a number field, getString
-								if( leftNode->at(ct2).getString(schema->getFieldPos(it->second.at(ct4))) ==
-									rightNode->at(ct3).getString(schema->getFieldPos(it->second.at(ct4))) ){
-										found--;
-								}
-							}else{
-								if( leftNode->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4))) ==
-									rightNode->at(ct3).getInt(schema->getFieldPos(it->second.at(ct4)))){
-										found--;
+						int ct3;
+						int found;
+						int ct4;
+						// take leftNode, compare with rightNode
+						for(ct3=0;ct3<rightNode->size();ct3++){
+							found=it->second.size();
+							for(ct4=0;ct4<it->second.size();ct4++){
+								if(leftNode->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4)))==0){
+									// Not a number field, getString
+									if( leftNode->at(ct2).getString(schema->getFieldPos(it->second.at(ct4))) ==
+										rightNode->at(ct3).getString(schema->getFieldPos(it->second.at(ct4))) ){
+											found--;
+									}
+								}else{
+									if( leftNode->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4))) ==
+										rightNode->at(ct3).getInt(schema->getFieldPos(it->second.at(ct4)))){
+											found--;
+									}
 								}
 							}
+							// match found
+							if(found==0){r->push_back(rightNode->at(ct3));}						
 						}
-						// match found
-						if(found==0){r->push_back(rightNode->at(ct3));}						
-					}
 					}
 					return r;
-				}else if(node->body.expr.op[0] == 'N'){
+				}else if(node->body.expr.type==not){
 
+					int ct2;
+					for(ct2=0;ct2<leftNode->size();ct2++){
+						int ct3;
+						int found;
+						int ct4;
+						// take leftNode, compare with orig. set
+						for(ct3=0;ct3< origSet.size();ct3++){
+							found=it->second.size();
+							for(ct4=0;ct4<it->second.size();ct4++){
+								if(leftNode->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4)))==0){
+									// Not a number field, getString
+									if( leftNode->at(ct2).getString(schema->getFieldPos(it->second.at(ct4))) ==
+										origSet.at(ct3).getString(schema->getFieldPos(it->second.at(ct4))) ){
+											found--;
+									}
+								}else{
+									if( leftNode->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4))) ==
+										origSet.at(ct3).getInt(schema->getFieldPos(it->second.at(ct4)))){
+											found--;
+									}
+								}
+							}
+							// match found
+							if(found!=0){r->push_back(leftNode->at(ct2));}						
+						}
+					}
+
+				
+					return r;
 				}
 			}
 		}
