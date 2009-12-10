@@ -50,7 +50,8 @@ public:
 	void insert_by_node(tree* node,vector<string>& fieldNames,vector<atom_ref>& fieldValues,char* op);
 	vector<Tuple>* delete_by_node(tree* node,vector<Tuple>origSet,Schema* schema);
 	void print_select_single(vector<Tuple> resultTuples,vector<string>fields,map <string,vector<string>> relationFieldMap);
-	vector<Tuple>* Driver::select_by_node_single_relation(tree* node,vector<Tuple> origSet,Schema* schema);
+	vector<Tuple>* Driver::select_by_node_single_relation(tree* node,vector<Tuple> origSet,Schema* schema,
+		map <string,vector<string>> relationFieldMap,int stmt);
 
     /** DB Project: run create statement, put schema into virtual.
      * @param stmtNo	
