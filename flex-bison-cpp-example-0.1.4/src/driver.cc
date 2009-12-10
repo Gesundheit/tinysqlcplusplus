@@ -743,7 +743,36 @@ namespace example {
 					}
 					return r;
 				}else if(node->body.expr.op[0] == 'O'){
-
+					for(int ct=0;ct<leftNode->size();ct++){
+						r->push_back(leftNode->at(ct));
+					}
+					int ct2;
+					for(ct2=0;ct2<leftNode->size();ct2++){
+					int ct3;
+					int found;
+					int ct4;
+					// take leftNode, compare with rightNode
+					for(ct3=0;ct3<rightNode->size();ct3++){
+						found=it->second.size();
+						for(ct4=0;ct4<it->second.size();ct4++){
+							if(leftNode->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4)))==0){
+								// Not a number field, getString
+								if( leftNode->at(ct2).getString(schema->getFieldPos(it->second.at(ct4))) ==
+									rightNode->at(ct3).getString(schema->getFieldPos(it->second.at(ct4))) ){
+										found--;
+								}
+							}else{
+								if( leftNode->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4))) ==
+									rightNode->at(ct3).getInt(schema->getFieldPos(it->second.at(ct4)))){
+										found--;
+								}
+							}
+						}
+						// match found
+						if(found==0){r->push_back(rightNode->at(ct3));}						
+					}
+					}
+					return r;
 				}else if(node->body.expr.op[0] == 'N'){
 
 				}
