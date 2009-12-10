@@ -11,6 +11,8 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <deque>
+#include <iostream>
 
 using namespace std;
 
@@ -227,9 +229,11 @@ namespace example {
 			get_columns(relations,stmtNo, schemaMgr, columns, attributes_to_project);
 
 			if(calc.stmt_vector[stmtNo]->body.stmt.arg3!=NULL){
-				process_condition(relations, stmtNo, schemaMgr, calc.stmt_vector[stmtNo]->body.stmt.arg3, attributes_to_project);
+				process_condition(relations, stmtNo,schemaMgr, calc.stmt_vector[stmtNo]->body.stmt.arg3, attributes_to_project);
 			}
 			else{
+				//apply cross join
+				cross_join(relations, schemaMgr, mem, attributes_to_project, relationFieldMap);
 				cout<<"No condition"<<endl;
 			}
 		}
@@ -237,8 +241,164 @@ namespace example {
 		// single or multi relation, call appropriate, return resulting bags to memory, if appropriate	   
 		// apply distinct or order by, if appropriate
 		
-
 		return true;
+
+	}
+	void Driver::cross_join(vector<string> *relations, SchemaManager &schemaMgr, MainMemory &mem, 
+		std::map<string,std::vector<column_ref>*> *attributes_to_project,map<string,vector<string>> relationFieldMap) {
+
+		for(int i=0; i<relations->size();i++) {
+			string relation = (*relations)[i]; 
+			if(schemaMgr.getSchema(relation) == NULL){
+				printf("Table not found\n");
+				return;
+			}
+			if(schemaMgr.getRelation(relation) == NULL){
+				printf("Table not found\n");
+				return;
+			}
+		}
+		deque<string> relations_to_print ;
+		relations_to_print.insert(relations_to_print.begin(),relations->begin(),relations->end());
+		int last_rel_index = relations_to_print.size()-1;
+		bool last_in_mem=false;
+		Relation* relationPtr = schemaMgr.getRelation(relations_to_print[last_rel_index]);
+		int last_rel_size = relationPtr->getNumOfBlocks();
+		if (mem.getMemorySize()-last_rel_index>=relationPtr->getNumOfBlocks()){
+			Driver::get_blocks_to_mem(last_rel_index,mem,relationPtr);
+			last_in_mem = true;
+		}	
+		string s("");
+		print_cross_join(relations_to_print,schemaMgr,mem,attributes_to_project,s,0,last_in_mem,relationFieldMap);
+		return;
+	}
+
+	void Driver::print_cross_join(deque<string> relations_to_print, SchemaManager &schemaMgr, MainMemory &mem,
+									std::map<string,std::vector<column_ref>*> *attributes_to_project, string &res_tuple, 
+									int memindex, bool last_in_mem, map<string,vector<string>> relationFieldMap){
+		string print_relation(relations_to_print.front());
+		relations_to_print.pop_front();
+		Relation* relationPtr = schemaMgr.getRelation(print_relation);
+		Schema* schema = schemaMgr.getSchema(print_relation);
+		vector<column_ref> *attributes = (*attributes_to_project)[relationPtr->getRelationName()];
+		if (relations_to_print.size()==0) {
+			if(relationPtr->getNumOfBlocks()==NULL){
+				print_result_tuple(res_tuple);
+			}
+			if(last_in_mem) {
+				vector<Tuple> tuples = mem.getTuples(memindex,relationPtr->getNumOfBlocks());
+				if(attributes->size()!=0) {
+					for(int i=0;i<tuples.size();i++) {
+						Tuple t = tuples[i];
+						Driver::process_tuple(*attributes,t,schema, res_tuple,relationFieldMap[print_relation]);
+						Driver::print_result_tuple(res_tuple);
+					}				
+				}
+				else {
+					for(int i=0;i<tuples.size();i++) {
+						Tuple t = tuples[i];
+						cout<<res_tuple<<"\t";
+						Driver::print_result_tuple(t);
+					}	
+				}
+			}
+			else{
+				for(int i=0; i<relationPtr->getNumOfBlocks();i++){
+						relationPtr->readBlockToMemory(i,memindex);
+						Block *b = mem.getBlock(memindex);
+						vector<Tuple> tuples = b->getTuples();
+						if(attributes->size()!=0) {
+							for(int j=0; j<tuples.size();j++){
+								Tuple t = tuples[j];
+								string temp = res_tuple;
+								Driver::process_tuple(*attributes,t,schema, temp,relationFieldMap[print_relation]);
+								Driver::print_result_tuple(temp);
+							}
+						}
+						else{
+							for(int i=0;i<tuples.size();i++) {
+								Tuple t = tuples[i];
+								cout<<res_tuple<<"\t";
+								Driver::print_result_tuple(t);
+							}
+						}
+				}
+			}					
+		}
+		else {
+			for(int i=0; i<relationPtr->getNumOfBlocks();i++){
+				relationPtr->readBlockToMemory(i,memindex);
+				Block *b = mem.getBlock(memindex);
+				vector<Tuple> tuples = b->getTuples();
+
+				if(attributes->size()!=0) {
+					for(int j=0; j<tuples.size();j++){
+						Tuple t = tuples[j];
+						string temp = res_tuple;
+						Driver::process_tuple(*attributes,t,schema, temp, relationFieldMap[print_relation]);
+						Driver::print_cross_join(relations_to_print,schemaMgr, mem,attributes_to_project, temp, memindex+1, last_in_mem, relationFieldMap);						
+				
+					}
+				}
+				else{
+					for(int i=0;i<tuples.size();i++) {
+						Tuple t = tuples[i];
+						string temp = res_tuple;
+						Driver::process_tuple(*attributes,t,schema, temp, relationFieldMap[print_relation]);
+						Driver::print_cross_join(relations_to_print,schemaMgr, mem,attributes_to_project, temp, memindex+1, last_in_mem, relationFieldMap);						
+						
+					}
+				}
+			}
+		}		
+	}
+
+	void Driver::print_result_tuple(Tuple t){
+		t.printTuple();
+		std::cout<<std::endl;
+		return;
+		
+	}
+	void Driver::print_result_tuple(string res){
+		std::cout<<res<<std::endl;
+		return;
+	}
+
+	void Driver::process_tuple(std::vector<column_ref> attributes,Tuple t, Schema *schema, string &res_tuple, vector<string> relationFieldMap){
+		if (attributes.size()==0) {
+			for(int j=0; j<relationFieldMap.size();j++) {
+				int pos = schema->getFieldPos(relationFieldMap[j]);
+				if (schema->getFieldType(relationFieldMap[j])=="INT") {
+					std::stringstream out;
+					out << t.getInt(pos);
+					res_tuple.append(out.str());
+					res_tuple.append("\t");
+				} else if (schema->getFieldType(relationFieldMap[j])=="STR20") {
+					res_tuple.append(t.getString(pos));
+					res_tuple.append("\t");							
+				}
+			}
+			return;
+		}
+		for(int j=0; j<attributes.size();j++) {
+			int pos = schema->getFieldPos(attributes[j].column_name);
+			if (schema->getFieldType(attributes[j].column_name)=="INT") {
+				std::stringstream out;
+				out << t.getInt(pos);
+				res_tuple.append(out.str());
+				res_tuple.append("\t");
+			} else if (schema->getFieldType(attributes[j].column_name)=="STR20") {
+				res_tuple.append(t.getString(pos));
+				res_tuple.append("\t");							
+			}
+		}
+		return;
+	}
+
+	void Driver::get_blocks_to_mem(int start_ind,  MainMemory &mem, Relation* relationPtr){
+		for(int i=0;i<relationPtr->getNumOfBlocks();i++){
+			relationPtr->readBlockToMemory(i,i+start_ind);
+		}		
 	}
 
 	bool Driver::run_delete(int stmtNo, SchemaManager &schemaMgr, MainMemory &mem,map <string,vector<string>> relationFieldMap){

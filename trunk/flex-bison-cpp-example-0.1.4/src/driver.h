@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+#include <deque>
 #include<list>
 #include <string.h>
 
@@ -52,8 +53,18 @@ public:
 	void print_select_single(vector<Tuple> resultTuples,vector<string>fields,map <string,vector<string>> relationFieldMap);
 	vector<Tuple>* Driver::select_by_node_single_relation(tree* node,vector<Tuple> origSet,Schema* schema,
 		map <string,vector<string>> relationFieldMap,int stmt);
+	void Driver::process_tuple(std::vector<column_ref> attributes,Tuple t,Schema *schema, string &res_tuple, vector<string> relationFieldMap);
+	void Driver::print_cross_join(deque<string> relations_to_print, SchemaManager &schemaMgr, MainMemory &mem,
+									std::map<string,std::vector<column_ref>*> *attributes_to_project, string &res_tuple, 
+									int memindex, bool last_in_mem, map<string,vector<string>> relationFieldMap);
+	void Driver::cross_join(vector<string> *relations, SchemaManager &schemaMgr, MainMemory &mem, 
+		std::map<string,std::vector<column_ref>*> *attributes_to_project,map<string,vector<string>> relationFieldMap);
 
-    /** DB Project: run create statement, put schema into virtual.
+	void Driver::print_result_tuple(string res);
+	void Driver::print_result_tuple(Tuple t);
+	void Driver::get_blocks_to_mem(int start_ind,  MainMemory &mem, Relation* relationPtr);
+
+	/** DB Project: run create statement, put schema into virtual.
      * @param stmtNo	
      * @param schemaMgr
      * @return		true if successfully put
