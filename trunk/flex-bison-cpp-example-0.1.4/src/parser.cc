@@ -558,7 +558,7 @@ namespace example
 
   case 29:
 #line 206 "parser.yy"
-    {printf("NOT\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(2) - (2)].tree_s),NULL,NULL,not);;}
+    {printf("NOT\n"); (yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(2) - (2)].tree_s),NULL,"",not);;}
     break;
 
   case 30:
