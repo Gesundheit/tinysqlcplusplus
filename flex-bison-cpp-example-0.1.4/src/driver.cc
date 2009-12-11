@@ -14,6 +14,7 @@
 #include <deque>
 #include <iostream>
 
+
 using namespace std;
 
 #include "driver.h"
@@ -187,8 +188,12 @@ namespace example {
 	bool Driver::run_select(int stmtNo, SchemaManager &schemaMgr,MainMemory &mem,map <string,vector<string>> relationFieldMap){
 		vector<string> *relations  = new vector<string>;
 		std::map<string,std::vector<column_ref>*> *attributes_to_project = new std::map<string,std::vector<column_ref>*>;
+		std::map<string,std::vector<column_ref>*> attributes_to_print;
 
-		get_relations(stmtNo, relations,attributes_to_project);			
+		map<string,int> disk_proj;
+		map<string,int> disk_proj_size;
+		get_relations(stmtNo, relations,schemaMgr, attributes_to_project, disk_proj,disk_proj_size);	
+		attributes_to_print = *attributes_to_project;
 		if(relations->size()<2){
 
 			// read all tutples from disk to mem, then to a vector, this is to prepare for NOT, OrderBy, and DISTINCT
@@ -368,9 +373,17 @@ namespace example {
 		}else{
 			vector<column_ref> *columns  = new vector<column_ref>;
 			get_columns(relations,stmtNo, schemaMgr, columns, attributes_to_project);
-
 			if(calc.stmt_vector[stmtNo]->body.stmt.arg3!=NULL){
-				process_condition(relations, stmtNo,schemaMgr, calc.stmt_vector[stmtNo]->body.stmt.arg3, attributes_to_project);
+				process_condition(relations, stmtNo,schemaMgr, calc.stmt_vector[stmtNo]->body.stmt.arg3, attributes_to_project);				
+				execute_condition(relations, stmtNo,schemaMgr, calc.stmt_vector[stmtNo]->body.stmt.arg3, attributes_to_project, 
+					relationFieldMap,mem, disk_proj,disk_proj_size,0,attributes_to_print);
+				if (columns->size()==0){
+
+
+				}
+				else {
+
+				}
 			}
 			else{
 				//apply cross join
@@ -406,7 +419,7 @@ namespace example {
 		Relation* relationPtr = schemaMgr.getRelation(relations_to_print[last_rel_index]);
 		int last_rel_size = relationPtr->getNumOfBlocks();
 		if (mem.getMemorySize()-last_rel_index>=relationPtr->getNumOfBlocks()){
-			Driver::get_blocks_to_mem(last_rel_index,mem,relationPtr);
+			Driver::get_blocks_to_mem(last_rel_index,mem,last_rel_size,relationPtr);
 			last_in_mem = true;
 		}	
 		string s("");
@@ -477,8 +490,7 @@ namespace example {
 						Tuple t = tuples[j];
 						string temp = res_tuple;
 						Driver::process_tuple(*attributes,t,schema, temp, relationFieldMap[print_relation]);
-						Driver::print_cross_join(relations_to_print,schemaMgr, mem,attributes_to_project, temp, memindex+1, last_in_mem, relationFieldMap);						
-				
+						Driver::print_cross_join(relations_to_print,schemaMgr, mem,attributes_to_project, temp, memindex+1, last_in_mem, relationFieldMap);										
 					}
 				}
 				else{
@@ -486,13 +498,315 @@ namespace example {
 						Tuple t = tuples[i];
 						string temp = res_tuple;
 						Driver::process_tuple(*attributes,t,schema, temp, relationFieldMap[print_relation]);
-						Driver::print_cross_join(relations_to_print,schemaMgr, mem,attributes_to_project, temp, memindex+1, last_in_mem, relationFieldMap);						
-						
+						Driver::print_cross_join(relations_to_print,schemaMgr, mem,attributes_to_project, temp, memindex+1, last_in_mem, relationFieldMap);												
 					}
 				}
 			}
 		}		
 	}
+
+	vector<pair<Tuple,Tuple>> Driver::natural_join(string relation1,string relation2, SchemaManager &schemaMgr, MainMemory &mem,
+									std::map<string,std::vector<column_ref>*> *attributes_to_project,
+									int memindex, map<string,vector<string>> relationFieldMap, char* op, string column,
+									map<string,int> &disk_proj, map<string,int> &disk_proj_size)
+	{
+		Schema *schema1 = schemaMgr.getSchema(relation1);
+		Schema *schema2 = schemaMgr.getSchema(relation2);
+		Relation *relationPtr1 = schemaMgr.getRelation(relation1);
+		Relation *relationPtr2 = schemaMgr.getRelation(relation2);
+		int size1 = disk_proj_size[relation1];
+		int size2 = disk_proj_size[relation1];
+		Driver::clearMemory(mem);
+		vector<pair<Tuple,Tuple>> result;
+		if(size1<=mem.getMemorySize()-1 ||size2<=mem.getMemorySize()-1) { // one-pass
+			if(size1<=mem.getMemorySize()-1) {
+				Driver::get_blocks_to_mem(0,mem, size1,relationPtr1, disk_proj[relation1]);
+				for(int i=0;i<disk_proj_size[relation2];i++) {
+					relationPtr2->readBlockToMemory(disk_proj[relation2]+i,mem.getMemorySize()-1);
+					Block *b2 = mem.getBlock(mem.getMemorySize()-1);
+					vector<Tuple> tuples2 = b2->getTuples();
+					for(int j=0; j<tuples2.size(); j++){
+						Tuple t2  = tuples2[j];
+						if(schema2->getFieldType(column)=="STR20") {
+							string str2 = t2.getString(schema2->getFieldPos(column));
+							if(str2=="") continue;
+							vector<Tuple> tuples =mem.getTuples(0,relationPtr1->getNumOfBlocks());
+							for(int k =0; k<tuples.size();k++ ) {
+								Tuple t1 = tuples[k];
+								string str1 = t1.getString(schema1->getFieldPos(column));
+								if(str1=="") continue;
+								if(strcmp("=",op)==0 && str1==str2 ||
+									strcmp(">",op)==0 && str1>str2 ||
+									strcmp("<",op)==0 && str1<str2) {
+									pair<Tuple,Tuple> r(t1,t2);
+									result.push_back(r);
+								}
+							}
+						}
+						else {
+							int int2 = t2.getInt(schema2->getFieldPos(column));
+							if(int2==-1) continue;
+							vector<Tuple> tuples =mem.getTuples(0,relationPtr1->getNumOfBlocks());
+							for(int k =0; k<tuples.size();k++ ) {
+								Tuple t1 = tuples[k];
+								int int1 = t1.getInt(schema1->getFieldPos(column));
+								if(int1==-1) continue;
+								if (strcmp("=",op)==0 && int1==int2 ||
+									strcmp(">",op)==0 && int1>int2 ||
+									strcmp("<",op)==0 && int1<int2) {
+									pair<Tuple,Tuple> r(t1,t2);
+									result.push_back(r);
+								}
+							}
+
+						}
+						
+					}
+				}
+			}
+			else {
+				Driver::get_blocks_to_mem(0,mem,disk_proj_size[relation2],relationPtr2,disk_proj_size[relation2]);
+				mem.dumpMemory();
+				for(int i=0;i<relationPtr1->getNumOfBlocks();i++) {
+					relationPtr1->readBlockToMemory(disk_proj[relation1]+i,mem.getMemorySize()-1);
+					mem.dumpMemory();
+					Block *b1 = mem.getBlock(mem.getMemorySize()-1);
+					vector<Tuple> tuples1 = b1->getTuples();
+					for(int j=0; j<tuples1.size(); j++){
+						Tuple t1  = tuples1[j];
+						if(schema1->getFieldType(column)=="STR20") {
+							string str1 = t1.getString(schema1->getFieldPos(column));
+							if(str1=="") continue;
+							vector<Tuple> tuples =mem.getTuples(0,relationPtr1->getNumOfBlocks());
+							for(int k =0; k<tuples.size();k++ ) {
+								Tuple t2 = tuples[k];
+								string str2 = t2.getString(schema2->getFieldPos(column));
+								if(str2=="") continue;
+								if(strcmp("=",op)==0 && str1==str2 ||
+									strcmp(">",op)==0 && str1>str2 ||
+									strcmp("<",op)==0 && str1<str2) {
+									pair<Tuple,Tuple> r(t1,t2);
+									result.push_back(r);
+								}
+							}
+						}
+						else {
+							int int1 = t1.getInt(schema2->getFieldPos(column));
+							if(int1==-1) continue;
+							vector<Tuple> tuples =mem.getTuples(0,relationPtr1->getNumOfBlocks());
+							for(int k =0; k<tuples.size();k++ ) {
+								Tuple t2 = tuples[k];
+								int int2 = t2.getInt(schema1->getFieldPos(column));
+								if(int2==-1) continue;
+								if (strcmp("=",op)==0 && int1==int2 ||
+									strcmp(">",op)==0 && int1>int2 ||
+									strcmp("<",op)==0 && int1<int2) {
+									pair<Tuple,Tuple> r(t1,t2);
+									result.push_back(r);
+								}
+							}
+
+						}						
+					}
+				}
+			}
+		}
+		else { // two-pass
+			//sort first
+			int sorted_index1 = Driver::sort_relation(relation1,schemaMgr,mem,0,column,disk_proj,disk_proj_size);
+			Driver::clearMemory(mem);
+			//sort second
+			int sorted_index2 = Driver::sort_relation(relation2,schemaMgr,mem,0,column,disk_proj,disk_proj_size);
+			Driver::clearMemory(mem);
+			int remaining_blocks = disk_proj_size[relation1];
+			int chunks_blocks1 = ceil((float)disk_proj[relation1]/(mem.getMemorySize()-1));
+
+			for(int i=0; i<chunks_blocks1;i++) {
+
+				Driver::get_blocks_to_mem(0,mem,mem.getMemorySize()-1,relationPtr1,sorted_index1);
+				sorted_index1 += mem.getMemorySize()-1;
+				remaining_blocks -= min(remaining_blocks,mem.getMemorySize()-1);
+				vector<Tuple> tuples1 = mem.getTuples(0,min(remaining_blocks,mem.getMemorySize()-1));
+				
+				for (int j=0; j<disk_proj_size[relation2]; j++) {
+					
+					if(schema1->getFieldType(column)=="STR20") {							
+						for(int i=0;i<tuples1.size();) {
+							Tuple t1 = tuples1[i];
+							string str1 = t1.getString(schema1->getFieldPos(column));
+							if(str1=="") continue;
+							relationPtr2->readBlockToMemory(sorted_index2+j,mem.getMemorySize()-1);
+							Block *b2 = mem.getBlock(mem.getMemorySize()-1);
+							vector<Tuple> tuples2 = b2->getTuples();
+							for(int j=0; j<tuples2.size();) {
+								Tuple t2 = tuples2[j];
+								string str2 = t2.getString(schema2->getFieldPos(column));
+								if(str2=="") continue;
+								if(strcmp("=",op)==0) {
+									if(str1==str2) {
+										pair<Tuple,Tuple> r(t1,t2);
+										result.push_back(r);
+										i++;j++;
+									}
+									else if(str1<str2) {
+										i++;
+									}
+									else {
+										j++;
+									}
+								}
+								if(strcmp(">",op)==0) {
+									if(str1>str2) {
+										pair<Tuple,Tuple> r(t1,t2);
+										result.push_back(r);
+										j++;
+									}
+									else if(str1>str2) {
+										return result;
+									}
+									else {
+										j++;
+									}
+								}
+								if(strcmp("<",op)==0) {
+									if(str1<str2) {
+										pair<Tuple,Tuple> r(t1,t2);
+										result.push_back(r);
+										j++;
+									}
+									else if(str1<str2) {
+										i++;
+									}
+									else {
+										i++;
+									}
+								}
+								if(i>tuples1.size() ||j>tuples2.size()) {
+									break;
+								}
+							}								
+							if(i>tuples1.size()){
+								break;
+							}
+						}
+						
+					}
+					if(schema1->getFieldType(column)=="INT") {							
+						for(int i=0;i<tuples1.size();) {
+							Tuple t1 = tuples1[i];
+							int int1 = t1.getInt(schema1->getFieldPos(column));
+							if(int1==-1) continue;
+							relationPtr2->readBlockToMemory(sorted_index2+j,mem.getMemorySize()-1);
+							Block *b2 = mem.getBlock(mem.getMemorySize()-1);
+							vector<Tuple> tuples2 = b2->getTuples();
+							for(int j=0; j<tuples2.size();) {
+								Tuple t2 = tuples2[j];
+								int int2 = t2.getInt(schema2->getFieldPos(column));
+								if(int2==-1) continue;
+								if(strcmp("=",op)==0) {
+									if(int1==int2) {
+										pair<Tuple,Tuple> r(t1,t2);
+										result.push_back(r);
+										i++;j++;
+									}
+									else if(int1<int2) {
+										i++;
+									}
+									else {
+										j++;
+									}
+								}
+								if(strcmp(">",op)==0) {
+									if(int1>int2) {
+										pair<Tuple,Tuple> r(t1,t2);
+										result.push_back(r);
+										j++;
+									}
+									else if(int1>int2) {
+										return result;
+									}
+									else {
+										j++;
+									}
+								}
+								if(strcmp("<",op)==0) {
+									if(int1<int2) {
+										pair<Tuple,Tuple> r(t1,t2);
+										result.push_back(r);
+										j++;
+									}
+									else if(int1>int2) {
+										i++;
+									}
+									else {
+										i++;
+									}
+								}
+								if(i>tuples1.size() ||j>tuples2.size()) {
+									break;
+								}
+							}								
+							if(i>tuples1.size()){
+								break;
+							}
+						}
+						
+					}			
+				
+				}
+					
+			}
+						
+
+		}
+		return result;
+
+	}
+
+	int Driver::sort_relation(string relation, SchemaManager &schemaMgr, MainMemory &mem, int memindex, 
+									 string column, map<string,int> &disk_proj, map<string,int> &disk_proj_size)
+	{
+		Relation *relationPtr = schemaMgr.getRelation(relation);
+		Schema *schema = schemaMgr.getSchema(relation);
+		Driver::get_blocks_to_mem(0,mem,disk_proj_size[relation],relationPtr,disk_proj[relation]);
+		vector<Tuple> to_sort;
+		for(int i=0; i<disk_proj_size[relation]; i++ ) {
+			Block *b = mem.getBlock(i);
+			vector<Tuple> tuples = b->getTuples();
+			for(int j=0; j<tuples.size(); j++) {
+				to_sort.push_back(tuples[j]);
+			}			
+		}
+
+		if(schema->getFieldType(column)=="STR20") {
+			sort( to_sort.begin(),to_sort.end(),comparator(schema->getFieldPos(column)));
+		}
+		if(schema->getFieldType(column)=="INT") {
+			sort( to_sort.begin(),to_sort.end(),comparator(schema->getFieldPos(column)));
+		}
+
+		int to_sort_index = 0;
+		int result_rel_ind = 500;
+		for(int i=0; i<disk_proj_size[relation]; i++ ) {
+			Block *b = mem.getBlock(i);
+			vector<Tuple> tuples = b->getTuples();
+			for(int j=0; j<tuples.size() && to_sort_index<to_sort.size(); j++) {
+				b->setTuple(j,to_sort[to_sort_index]);
+			}
+			relationPtr->writeBlockFromMemory(result_rel_ind+i,i);
+		}
+
+		return result_rel_ind;	
+	}
+
+
+	void Driver::clearMemory(MainMemory &mem){
+		for(int i=0;i<mem.getMemorySize(); i++){
+			Block *b = mem.getBlock(i);
+			b->clear();
+		}
+	}
+
 
 	void Driver::print_result_tuple(Tuple t){
 		t.printTuple();
@@ -536,9 +850,9 @@ namespace example {
 		return;
 	}
 
-	void Driver::get_blocks_to_mem(int start_ind,  MainMemory &mem, Relation* relationPtr){
-		for(int i=0;i<relationPtr->getNumOfBlocks();i++){
-			relationPtr->readBlockToMemory(i,i+start_ind);
+	void Driver::get_blocks_to_mem(int mem_start_ind, MainMemory &mem, int rel_size,Relation* relationPtr,int rel_start_ind){
+		for(int i=0;i<rel_size;i++){
+			relationPtr->readBlockToMemory(i+rel_start_ind,i+mem_start_ind);
 		}		
 	}
 
@@ -1047,7 +1361,363 @@ namespace example {
 
 	}
 
-	 vector<string> Driver::process_condition(const vector<string> *total_relations,const int stmtNo,
+/*	map<string,vector<tuples>> Driver::natutal_join(const vector<string> *total_relations, SchemaManager &schemaMgr, tree* condition, 
+										std::map<string,std::vector<column_ref>*> *attributes_to_project,
+										map <string,vector<string>> relationFieldMap,
+										vector<tuples>> arg1, map<string,vector<tuples>> arg2)
+	{
+				
+
+		
+	}
+*/
+
+	int Driver::project_relation(vector<column_ref> *attributes, vector<string> relationFields, 
+											SchemaManager &schemaMgr, MainMemory &mem, string rel_name) 
+	{
+		if(attributes->size()==0){
+			return 0;
+		}
+		Driver::clearMemory(mem);
+		Relation* relationPtr = schemaMgr.getRelation(rel_name);
+		int last_rel_size = relationPtr->getNumOfBlocks();
+		Schema schema = *(schemaMgr.getSchema(rel_name));
+		vector<string> cols(attributes->size());
+		for (int i=0; i<attributes->size();i++) {
+			cols[i] = (*attributes)[i].column_name;
+		}
+		int size =relationPtr->getNumOfBlocks();
+		if (mem.getMemorySize()>relationPtr->getNumOfBlocks()){
+			Driver::get_blocks_to_mem(0,mem,size,relationPtr);
+			for(int i=0; i<size; i++){
+				mem.dumpMemory();
+				Driver::project_rel_block(cols,relationFields, *mem.getBlock(i), schema);
+				mem.dumpMemory();
+				relationPtr->writeBlockFromMemory(size+i,i);
+			}
+		}	
+		else {
+			for(int i=0; i<size; i++) {
+				relationPtr->readBlockToMemory(i,0);
+				Driver::project_rel_block(cols,relationFields, *mem.getBlock(i), schema);				
+				relationPtr->writeBlockFromMemory(size+i,0);
+			}
+		}
+		return size;
+	}
+
+	void Driver::project_rel_block(std::vector<string> attributes,  vector<string> relationFields, 
+											Block &b , Schema &schema) 
+	{
+
+		for(int i=0; i<b.getNumTuples();i++) {
+			Tuple temp = b.getTuple(i);
+			temp.printTuple();
+			Tuple t(&schema);
+			b.setTuple(i,t);
+			t.printTuple();
+			for (int j=0; j<relationFields.size();j++) {
+				std::vector<string>::iterator  it= std::find(attributes.begin(),attributes.end(),relationFields[j]);
+				if(it != attributes.end() ){
+					if(schema.getFieldType(relationFields[j]) == "STR20") {
+						t.setField(schema.getFieldPos(relationFields[j]),temp.getString(schema.getFieldPos(relationFields[j])));
+					}
+					if(schema.getFieldType(relationFields[j]) == "INT") {
+						t.setField(schema.getFieldPos(relationFields[j]),temp.getInt(schema.getFieldPos(relationFields[j])));
+					}					
+				}
+			}
+			t.printTuple();
+			b.setTuple(i,t);
+		}
+		return;
+	}
+
+
+	vector<pair<Tuple,Tuple>> Driver::execute_condition(const vector<string> *total_relations,const int stmtNo,
+											SchemaManager &schemaMgr, tree* condition, 
+											std::map<string,std::vector<column_ref>*> *attributes_to_project,
+											map <string,vector<string>> relationFieldMap, MainMemory &mem,
+											map<string,int> &disk_proj, map<string,int> &disk_proj_size, int nest_level,
+											std::map<string,std::vector<column_ref>*> attributes_to_print)
+	{
+		vector<pair<Tuple,Tuple>> condition_relations1;
+		vector<pair<Tuple,Tuple>> condition_relations2;
+		if(condition->body.expr.type==binary) {
+			tree *arg1 = condition->body.expr.arg1;
+			tree *arg2 = condition->body.expr.arg2;
+			string relation_name1,relation_name2,column_name1,column_name2;
+			if(arg1->nodetype==colref_node) {
+				relation_name1 = arg1->body.colref.arg1;
+				column_name1 = arg1->body.colref.arg2->body.variable;
+				disk_proj[relation_name1] = Driver::project_relation((*attributes_to_project)[relation_name1],relationFieldMap[relation_name1],schemaMgr,mem,relation_name1);				
+			}
+			if(arg2->nodetype==colref_node) {
+				relation_name2 = arg2->body.colref.arg1;
+				column_name2 = arg2->body.colref.arg2->body.variable;
+				disk_proj[relation_name2] = Driver::project_relation((*attributes_to_project)[relation_name2],relationFieldMap[relation_name2],schemaMgr,mem,relation_name2);				
+			}
+
+			if(arg2->nodetype==number_node || arg2->nodetype==literal_node){
+				Relation *relationPtr = schemaMgr.getRelation(relation_name1);
+				int start_disk_block = start_disk_block=disk_proj[relation_name1];
+				Schema *schema = schemaMgr.getSchema(relation_name1);
+				bool str = ((schema->getFieldType(column_name1))=="STR20")?true:false;
+
+				if (mem.getMemorySize()>=relationPtr->getNumOfBlocks()){
+					Driver::get_blocks_to_mem(0,mem,disk_proj_size[relation_name1],relationPtr,start_disk_block);
+					for(int i=0; i<relationPtr->getNumOfBlocks(); i++){
+						vector<Tuple> tuples= mem.getBlock(i)->getTuples();
+						for(int j=0; j<tuples.size(); j++){
+							Tuple t =tuples[j]; 
+							if(strcmp(condition->body.expr.op,">")==0) {
+								if(str) {
+									if(t.getString(schema->getFieldPos(column_name1))>arg2->body.variable){									
+											
+									}
+									else {
+										Tuple t(schema);
+										tuples[j] = t;
+									}
+								}
+								else {
+									if(t.getInt(schema->getFieldPos(column_name1))>arg2->body.number){									
+										
+									}
+									else {
+										Tuple t(schema);
+										tuples[j] = t;
+									}
+								}
+							}
+							else if(strcmp(condition->body.expr.op,"<")==0) {
+								if(str) {
+									if(t.getString(schema->getFieldPos(column_name1))<arg2->body.variable){									
+										
+									}
+									else {
+										Tuple t(schema);
+										tuples[j] = t;
+									}
+								}
+								else {
+									if(t.getInt(schema->getFieldPos(column_name1))<arg1->body.number){									
+										
+									}
+									else {
+										Tuple t(schema);
+										tuples[j] = t;
+									}
+								}
+							}
+							else if(strcmp(condition->body.expr.op,"=")==0) {
+								if(str) {
+									if(t.getString(schema->getFieldPos(column_name1))==arg2->body.variable){									
+										
+									}
+									else {
+										Tuple t(schema);
+										tuples[j] = t;
+									}
+								}
+								else {
+									if(t.getInt(schema->getFieldPos(column_name1))==arg2->body.number){									
+										
+									}
+									else {
+										Tuple t(schema);
+										tuples[j] = t;
+									}
+								}
+							}								
+							
+						}
+						relationPtr->writeBlockFromMemory(disk_proj[relation_name1],i);
+					}
+				}	
+				else {
+					for(int i=0; i<relationPtr->getNumOfBlocks(); i++) {
+						relationPtr->readBlockToMemory(start_disk_block,0);
+						vector<Tuple> tuples= mem.getBlock(0)->getTuples();
+						for(int j=0; j<tuples.size(); j++){
+							Tuple t =tuples[j]; 
+							if(strcmp(condition->body.expr.op,">")==0) {
+								if(str) {
+									if(t.getString(schema->getFieldPos(column_name1))>arg2->body.variable){									
+											
+									}
+									else {
+										Tuple t(schema);
+										tuples[j] = t;
+									}
+								}
+								else {
+									if(t.getInt(schema->getFieldPos(column_name1))>arg2->body.number){									
+										
+									}
+									else {
+										Tuple t(schema);
+										tuples[j] = t;
+									}
+								}
+							}
+							else if(strcmp(condition->body.expr.op,"<")==0) {
+								if(str) {
+									if(t.getString(schema->getFieldPos(column_name1))<arg2->body.variable){									
+										
+									}
+									else {
+										Tuple t(schema);
+										tuples[j] = t;
+									}
+								}
+								else {
+									if(t.getInt(schema->getFieldPos(column_name1))<arg1->body.number){									
+										
+									}
+									else {
+										Tuple t(schema);
+										tuples[j] = t;
+									}
+								}
+							}
+							else if(strcmp(condition->body.expr.op,"=")==0) {
+								if(str) {
+									if(t.getString(schema->getFieldPos(column_name1))==arg2->body.variable){									
+										
+									}
+									else {
+										Tuple t(schema);
+										tuples[j] = t;
+									}
+								}
+								else {
+									if(t.getInt(schema->getFieldPos(column_name1))==arg2->body.number){									
+										
+									}
+									else {
+										Tuple t(schema);
+										tuples[j] = t;
+									}
+								}
+							}								
+							
+						}
+						relationPtr->writeBlockFromMemory(disk_proj[relation_name1],0);
+			
+					}
+				}
+				if(nest_level==0) {
+					//print output
+				}
+			}
+
+	
+			vector<pair<Tuple,Tuple>> result;
+			if (arg1->nodetype==colref_node && arg2->nodetype==colref_node) {
+				result = Driver::natural_join(relation_name1,relation_name2,schemaMgr,mem,attributes_to_project,0,relationFieldMap,condition->body.expr.op,column_name1,disk_proj,disk_proj_size);
+				if(nest_level==0) {
+					Driver::print_result(result,attributes_to_print,relationFieldMap,relation_name1,relation_name2,schemaMgr);
+
+					return result;
+				}
+				return result;
+			}
+
+			if(arg1->nodetype==expr_node) {
+				condition_relations1 =execute_condition(total_relations, stmtNo, schemaMgr, condition->body.expr.arg1,attributes_to_project,relationFieldMap,mem,disk_proj,disk_proj_size,nest_level+1,attributes_to_print);
+			}
+			if(arg2->nodetype==expr_node) {
+				condition_relations2 = execute_condition(total_relations, stmtNo, schemaMgr, condition->body.expr.arg2,attributes_to_project,relationFieldMap,mem,disk_proj,disk_proj_size,nest_level+1,attributes_to_print);
+			}	
+
+			if(condition_relations1.size()==0) {
+				return condition_relations2;				
+			}
+			else if(condition_relations2.size()==0) {
+				return condition_relations1;
+			}
+			else{
+				condition->body.expr.jtype = join; 
+				condition->body.expr.j = new(join_n);
+			}
+		
+		}
+		else if(condition->nodetype==paren) {
+		}
+		else if(condition->nodetype==not) {
+		}
+		condition_relations1.insert(condition_relations1.end(),condition_relations2.begin(),condition_relations2.end());
+		return condition_relations1;
+	}
+
+	void Driver::print_result(vector<pair<Tuple,Tuple>> res, std::map<string,std::vector<column_ref>*> attributes_to_print,
+								map <string,vector<string>> relationFieldMap,string relation1, string relation2, SchemaManager &schemaMgr) 
+	{
+
+		for(int i=0; i<res.size(); i++) {
+			pair<Tuple, Tuple> pt = res[i];
+			Tuple tuple1 = pt.first;
+			Tuple tuple2 = pt.second;
+			Schema *schema1 = schemaMgr.getSchema(relation1);
+			Schema *schema2 = schemaMgr.getSchema(relation2);
+
+			if(attributes_to_print.size()!=0) {
+				vector<column_ref> attributes1 = *(attributes_to_print[relation1]);
+				vector<column_ref> attributes2 = *(attributes_to_print[relation2]);
+				cout<< attributes1[0].relation_name<<":: \t";
+				for(int j=0; j<attributes1.size();j++){
+					int pos = schema1->getFieldPos(attributes1[j].column_name);
+					if(schema1->getFieldType(attributes1[j].column_name)=="STR20") {
+						cout<< attributes1[j].column_name<<":"<<(tuple1.getString(pos))<<" \t";
+					}
+					else {
+						cout<< attributes1[j].column_name<<":"<<(tuple1.getInt(pos))<<" \t";
+					}	
+				}
+				cout<< attributes2[0].relation_name<<":: \t";
+				for(int j=0; j<attributes2.size();j++){
+					int pos = schema2->getFieldPos(attributes2[j].column_name);
+					if(schema2->getFieldType(attributes2[j].column_name)=="STR20") {
+						cout<< attributes2[j].column_name<<":"<<(tuple2.getString(pos))<<" \t";
+					}
+					else {
+						cout<< attributes2[j].column_name<<":"<<(tuple2.getInt(pos))<<" \t";
+					}	
+				}
+
+			}
+
+			else{
+				vector<string> attributes1 = relationFieldMap[relation1];
+				vector<string> attributes2 = relationFieldMap[relation2];
+				cout<< attributes1[0]<<":: \t";
+				for(int j=0; j<attributes1.size();j++){
+					int pos = schema1->getFieldPos(attributes1[j]);
+					if(schema1->getFieldType(attributes1[j])=="STR20") {
+						cout<< attributes1[j]<<":"<<(tuple1.getString(pos))<<" \t";
+					}
+					else {
+						cout<< attributes1[j]<<":"<<(tuple1.getInt(pos))<<" \t";
+					}	
+				}
+				cout<< attributes2[0]<<":: \t";
+				for(int j=0; j<attributes2.size();j++){
+					int pos = schema2->getFieldPos(attributes2[j]);
+					if(schema2->getFieldType(attributes2[j])=="STR20") {
+						cout<< attributes1[j]<<":"<<(tuple2.getString(pos))<<" \t";
+					}
+					else {
+						cout<< attributes1[j]<<":"<<(tuple2.getInt(pos))<<" \t";
+					}	
+				}
+			}
+
+			cout<<endl;
+		}
+	}
+
+	vector<string> Driver::process_condition(const vector<string> *total_relations,const int stmtNo,
 											SchemaManager &schemaMgr, tree* condition, 
 											std::map<string,std::vector<column_ref>*> *attributes_to_project){
 		vector<string> condition_relations1;
@@ -1139,13 +1809,18 @@ namespace example {
 		return size;
 	}
 
-	void Driver::get_relations(const int stmtNo, vector<string> *relations, std::map<string,std::vector<column_ref>*> *attributes_to_project){
+	void Driver::get_relations(const int stmtNo, vector<string> *relations, SchemaManager &schemaMgr,
+		std::map<string,std::vector<column_ref>*> *attributes_to_project,map<string,int> &disk_proj, 
+		map<string,int> &disk_proj_size){
 		tree *relation_list = (tree*)calc.stmt_vector[stmtNo]->body.stmt.arg2->body.list.arg1;
 	    tree *relation      = (tree*)calc.stmt_vector[stmtNo]->body.stmt.arg2->body.list.arg2;
 		while(relation!=NULL){
 			relations->push_back(relation->body.variable);	
 			(*attributes_to_project)[relation->body.variable]=new vector<column_ref>;
 			cout<<"relation: "<<relation->body.variable<<endl;
+			disk_proj[relation->body.variable]=0;
+			Relation *relationptr = schemaMgr.getRelation(relation->body.variable);
+			disk_proj_size[relation->body.variable]= relationptr->getNumOfBlocks();
 			if(relation_list->nodetype==variable_node){
 				break;
 			}
@@ -1156,6 +1831,10 @@ namespace example {
 		relations->push_back(relation_list->body.variable);	
 		(*attributes_to_project)[relation_list->body.variable]=new vector<column_ref>;
 		cout<<"relation: "<<relation_list->body.variable<<endl;
+		disk_proj[relation_list->body.variable]=0;
+		Relation *relationptr = schemaMgr.getRelation(relation_list->body.variable);
+		disk_proj_size[relation_list->body.variable]= relationptr->getNumOfBlocks();
+
 		return;
 	}
 
