@@ -132,7 +132,7 @@ string Tuple::getString(int pos) const{
   if(pos<s.size() && pos>=0){
     return s[pos];
   }else{
-    cerr<<"getString ERROR: pos "<<pos<<" is out of bound!"<<endl;
+    //cerr<<"getString ERROR: pos "<<pos<<" is out of bound!"<<endl;
     return string();
   }
 }

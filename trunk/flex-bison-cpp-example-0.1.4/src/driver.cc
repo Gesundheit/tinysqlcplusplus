@@ -166,7 +166,7 @@ namespace example {
 			//cout << "The schema before createRelation has " << schema.getNumOfFields() << " fields" << endl;
 			//cout << "The schema before createRelation has " << schema.getNumOfInt() << " integers" << endl;
 			//cout << "The schema before createRelation has " << schema.getNumOfString() << " strings" << endl;
-			//cout << "The schema before createRelation allows " << schema.getTuplesPerBlock() << " tuples per block" << endl;
+			cout << "The schema before createRelation allows " << schema.getTuplesPerBlock() << " tuples per block" << endl;
 
 			
 			schemaMgr.createRelation(relationName,schema);
@@ -347,7 +347,23 @@ namespace example {
 			}
 			//print function, based on the projected column(s), 
 
-//below is for multi-relations
+
+			vector<column_ref> *columns  = new vector<column_ref>;
+			get_columns(relations,stmtNo, schemaMgr, columns, attributes_to_project);
+			vector<string> columnVect;
+			if(calc.stmt_vector[stmtNo]->body.stmt.arg1->nodetype == variable_node){
+				for(int ct=0;ct<it->second.size();ct++){
+					columnVect.push_back(it->second.at(ct));
+				}
+			}else{
+				for(int ct=0;ct<columns->size();ct++){
+					columnVect.push_back(columns->at(ct).column_name);
+				}
+			}
+			cout << "Print query on Relation: " << relations->at(0) << endl;
+			print_select_single(resultTuples,totalTuples,columnVect,relationFieldMap,schema);
+
+			//below is for multi-relations
 
 		}else{
 			vector<column_ref> *columns  = new vector<column_ref>;
@@ -613,9 +629,42 @@ namespace example {
 		return true;
 	}
 	
-	void Driver::print_select_single(vector<Tuple> resultTuples,vector<string>fields,map <string,vector<string>> relationFieldMap){
+	void Driver::print_select_single(vector<Tuple>* resultTuples,vector<Tuple> totalTuples,
+		vector<string>fields,map <string,vector<string>> relationFieldMap,Schema* schema){
 
-
+			if(resultTuples==NULL){
+			for(int ct=0;ct<fields.size();ct++){
+				cout<<fields.at(ct)<<"\t";
+			}
+			cout<<endl;
+			for(int ct1=0;ct1<totalTuples.size();ct1++){
+				for(int ct2=0;ct2<fields.size();ct2++){
+					if(schema->getFieldType(fields.at(ct2))=="STR20"){
+						cout<<totalTuples.at(ct1).getString(schema->getFieldPos(fields.at(ct2)))<<"\t";						
+					}
+					if(schema->getFieldType(fields.at(ct2))=="INT"){
+						cout<<totalTuples.at(ct1).getInt(schema->getFieldPos(fields.at(ct2)))<<"\t";						
+					}
+				}
+				cout<<endl;
+			}
+			}else{
+			for(int ct=0;ct<fields.size();ct++){
+				cout<<fields.at(ct)<<"\t";
+			}
+			cout<<endl;
+			for(int ct1=0;ct1<resultTuples->size();ct1++){
+				for(int ct2=0;ct2<fields.size();ct2++){
+					if(schema->getFieldType(fields.at(ct2))=="STR20"){
+						cout<<resultTuples->at(ct1).getString(schema->getFieldPos(fields.at(ct2)))<<"\t";						
+					}
+					if(schema->getFieldType(fields.at(ct2))=="INT"){
+						cout<<resultTuples->at(ct1).getInt(schema->getFieldPos(fields.at(ct2)))<<"\t";						
+					}
+				}
+				cout<<endl;
+			}
+			}
 
 		return;
 	}

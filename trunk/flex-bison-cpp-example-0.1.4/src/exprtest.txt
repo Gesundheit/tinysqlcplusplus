@@ -18,3 +18,4 @@ INSERT INTO course2 (sid,homework,project,exam,grade) VALUES(14,60,70,77,"C")
 INSERT INTO course2 (sid,homework,project,exam,grade) VALUES(14,70,77,72,"C")
 INSERT INTO course2 (sid,homework,project,exam,grade) VALUES(6,79,75,75,"C")
 INSERT INTO course2 (sid,homework,project,exam,grade) VALUES(17,82,80,77,"B")
+SELECT * FROM course WHERE grade="A"
