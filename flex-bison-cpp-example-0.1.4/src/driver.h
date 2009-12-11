@@ -50,7 +50,8 @@ public:
 	void create_by_node(tree* node,vector<string> &fieldNames,vector<string> &fieldValues);
 	void insert_by_node(tree* node,vector<string>& fieldNames,vector<atom_ref>& fieldValues,char* op);
 	vector<Tuple>* delete_by_node(tree* node,vector<Tuple>origSet,Schema* schema);
-	void print_select_single(vector<Tuple> resultTuples,vector<string>fields,map <string,vector<string>> relationFieldMap);
+	void print_select_single(vector<Tuple>* resultTuples,vector<Tuple> totalTuples,vector<string>fields,
+		map <string,vector<string>> relationFieldMap,Schema* schema);
 	vector<Tuple>* Driver::select_by_node_single_relation(tree* node,vector<Tuple> origSet,Schema* schema,
 		map <string,vector<string>> relationFieldMap,int stmt);
 	void Driver::process_tuple(std::vector<column_ref> attributes,Tuple t,Schema *schema, string &res_tuple, vector<string> relationFieldMap);
