@@ -207,22 +207,147 @@ namespace example {
 					totalTuples.push_back(tuples.at(ct2));
 				}
 			}
-
-			//if no condition, apply OrderBy and DISTINCT here, then print
-			if(calc.stmt_vector[stmtNo]->body.stmt.arg3== NULL){
-				//apply OrderBy
-				//apply DISTINCT
-				//print function, based on the projected column(s)
-				return true;
+			vector<Tuple>*resultTuples = NULL;
+			if(calc.stmt_vector[stmtNo]->body.stmt.arg3!=NULL){
+				resultTuples = select_by_node_single_relation(calc.stmt_vector[stmtNo]->body.stmt.arg3,totalTuples,schema,relationFieldMap,stmtNo);
+				//cout << resultTuples->size() << endl;
 			}
+			//use totalTuples if no where condition, use resultTuples if there is where condition
+			//apply OrderBy
+			map<string,vector<string>>::iterator it = relationFieldMap.find(calc.stmt_vector[stmtNo]->body.stmt.arg2->body.list.arg1->body.variable);
+			if(calc.stmt_vector[stmtNo]->body.stmt.arg4!=NULL){
+				if(resultTuples !=NULL){
+					int intKey = 0;
+					string stringKey;
+					int targetField = 0;
+					// find sort by INT field or String field
+					targetField = schema->getFieldPos(calc.stmt_vector[stmtNo]->body.stmt.arg4->body.colref.arg1);
+					if( schema->getFieldType(calc.stmt_vector[stmtNo]->body.stmt.arg4->body.colref.arg1)
+						== "STR20"){
+						int j=0;
+						for(int ct=1;ct<resultTuples->size();ct++){					   
+							stringKey = resultTuples->at(ct).getString(targetField);
+							j = ct-1;
+							while((j>=0) && (resultTuples->at(j).getString(targetField)>stringKey)){
+								swap(resultTuples->at(j+1),resultTuples->at(j));
+								j-=1;
+							}
+						}
+						//cout<< resultTuples->size() << endl;
+					}else{
+						int j=0;
+						for(int ct=1;ct<resultTuples->size();ct++){					   
+							intKey = resultTuples->at(ct).getInt(targetField);
+							j = ct-1;
+							while((j>=0) && (resultTuples->at(j).getInt(targetField)>intKey)){
+								swap(resultTuples->at(j+1),resultTuples->at(j));
+								j-=1;
+							}
+						}
+					}
+				}else{
+					// sort totalTutples instead
+					int intKey = 0;
+					string stringKey;
+					int targetField = 0;
+					// find sort by INT field or String field
+					targetField = schema->getFieldPos(calc.stmt_vector[stmtNo]->body.stmt.arg4->body.colref.arg1);
+					if( schema->getFieldType(calc.stmt_vector[stmtNo]->body.stmt.arg4->body.colref.arg1)
+						== "STR20"){
+						int j=0;
+						for(int ct=1;ct<totalTuples.size();ct++){					   
+							stringKey = totalTuples.at(ct).getString(targetField);
+							j = ct-1;
+							while((j>=0) && (totalTuples.at(j).getString(targetField)>stringKey)){
+								swap(totalTuples.at(j+1),totalTuples.at(j));
+								j-=1;
+							}
+						}
+						//cout<< totalTuples.size() << endl;
+					}else{
+						int j=0;
+						for(int ct=1;ct<totalTuples.size();ct++){					   
+							intKey = totalTuples.at(ct).getInt(targetField);
+							j = ct-1;
+							while((j>=0) && (totalTuples.at(j).getInt(targetField)>intKey)){
+								swap(totalTuples.at(j+1),totalTuples.at(j));
+								j-=1;
+							}
+						}
+					}
+				}
+			}
+			//apply DISTINCT
+			vector<Tuple>* distinctRTuples = new vector<Tuple>;
+			vector<Tuple> totalTTuples;
+			if(calc.stmt_vector[stmtNo]->body.stmt.dtype==dist){
+				if(resultTuples!=NULL){
+					distinctRTuples->push_back(resultTuples->at(0));
+					int ct2;
+					for(ct2=1;ct2<resultTuples->size();ct2++){
+						int ct3;
+						bool found=false;
+						int ct4;
+						// take resultTuples compare with dinstinct
+						for(ct3=0;ct3<distinctRTuples->size();ct3++){
+							int sfound=it->second.size();
+							for(ct4=0;ct4<it->second.size();ct4++){
+								if(resultTuples->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4)))==0){
+									// Not a number field, getString
+									if( resultTuples->at(ct2).getString(schema->getFieldPos(it->second.at(ct4))) ==
+										distinctRTuples->at(ct3).getString(schema->getFieldPos(it->second.at(ct4))) ){
+											sfound--;
+									}
+								}else{
+									if( resultTuples->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4))) ==
+										distinctRTuples->at(ct3).getInt(schema->getFieldPos(it->second.at(ct4)))){
+											sfound--;
+									}
+								}
+							}
+							if(sfound==0){found=true;}							
+						}
+							// match found
+							if(found==false){distinctRTuples->push_back(resultTuples->at(ct2));}						
+					}
+					resultTuples=distinctRTuples;
+					cout<<resultTuples->size()<<endl;
+				}else{
+					totalTTuples.push_back(totalTuples.at(0));
+					int ct2;
+					for(ct2=1;ct2<totalTuples.size();ct2++){
+						int ct3;
+						bool found=false;
+						int ct4;
+						// take resultTuples compare with dinstinct
+						for(ct3=0;ct3<totalTTuples.size();ct3++){
+							int sfound=it->second.size();
+							for(ct4=0;ct4<it->second.size();ct4++){
+								if(totalTuples.at(ct2).getInt(schema->getFieldPos(it->second.at(ct4)))==0){
+									// Not a number field, getString
+									if( totalTuples.at(ct2).getString(schema->getFieldPos(it->second.at(ct4))) ==
+										totalTTuples.at(ct3).getString(schema->getFieldPos(it->second.at(ct4))) ){
+											sfound--;
+									}
+								}else{
+									if( totalTuples.at(ct2).getInt(schema->getFieldPos(it->second.at(ct4))) ==
+										totalTTuples.at(ct3).getInt(schema->getFieldPos(it->second.at(ct4)))){
+											sfound--;
+									}
+								}
+							}
+							if(sfound==0){found=true;}							
+						}
+							// match found
+							if(found==false){totalTTuples.push_back(totalTuples.at(ct2));}						
+					}
+					totalTuples=totalTTuples;
+					cout << totalTuples.size() <<endl;
+				}
+			}
+			//print function, based on the projected column(s), 
 
-			vector<Tuple>*resultTuples = select_by_node_single_relation(calc.stmt_vector[stmtNo]->body.stmt.arg3,totalTuples,schema,relationFieldMap,stmtNo);
-			cout << resultTuples->size() << endl;
-
-
-
-
-
+//below is for multi-relations
 
 		}else{
 			vector<column_ref> *columns  = new vector<column_ref>;
@@ -774,35 +899,30 @@ namespace example {
 					}
 					return r;
 				}else if(node->body.expr.type==not){
-
 					int ct2;
-					for(ct2=0;ct2<leftNode->size();ct2++){
+					for(ct2=0;ct2<origSet.size();ct2++){
 						int ct3;
-						int found;
+						bool found=false;
 						int ct4;
-						// take leftNode, compare with orig. set
-						for(ct3=0;ct3< origSet.size();ct3++){
-							found=it->second.size();
+						// take orig. set, compare with left node
+						for(ct3=0;ct3< leftNode->size();ct3++){
 							for(ct4=0;ct4<it->second.size();ct4++){
-								if(leftNode->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4)))==0){
+								if( ((Tuple)origSet.at(ct2)).getInt(schema->getFieldPos(it->second.at(ct4)))==0){
 									// Not a number field, getString
-									if( leftNode->at(ct2).getString(schema->getFieldPos(it->second.at(ct4))) ==
-										origSet.at(ct3).getString(schema->getFieldPos(it->second.at(ct4))) ){
-											found--;
+									if(((Tuple)origSet.at(ct2)).getString(schema->getFieldPos(it->second.at(ct4))) ==
+										leftNode->at(ct3).getString(schema->getFieldPos(it->second.at(ct4))) ){
+											found=true;
 									}
 								}else{
-									if( leftNode->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4))) ==
-										origSet.at(ct3).getInt(schema->getFieldPos(it->second.at(ct4)))){
-											found--;
+									if( ((Tuple)origSet.at(ct2)).getInt(schema->getFieldPos(it->second.at(ct4))) ==
+										leftNode->at(ct3).getInt(schema->getFieldPos(it->second.at(ct4)))){
+											found=true;
 									}
 								}
 							}
-							// match found
-							if(found!=0){r->push_back(leftNode->at(ct2));}						
 						}
-					}
-
-				
+						if(found == false){r->push_back(origSet.at(ct2));}		
+					}				
 					return r;
 				}
 			}
