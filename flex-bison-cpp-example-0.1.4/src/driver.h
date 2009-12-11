@@ -61,7 +61,8 @@ public:
 	void insert_by_node(tree* node,vector<string>& fieldNames,vector<atom_ref>& fieldValues,char* op);
 	vector<Tuple>* delete_by_node(tree* node,vector<Tuple>origSet,Schema* schema);
 	void print_select_single(vector<Tuple>* resultTuples,vector<Tuple> totalTuples,vector<string>fields,
-		map <string,vector<string>> relationFieldMap,Schema* schema);
+                map <string,vector<string>> relationFieldMap,Schema* schema);
+
 	vector<Tuple>* Driver::select_by_node_single_relation(tree* node,vector<Tuple> origSet,Schema* schema,
 		map <string,vector<string>> relationFieldMap,int stmt);
 	void Driver::process_tuple(std::vector<column_ref> attributes,Tuple t,Schema *schema, string &res_tuple, vector<string> relationFieldMap);
@@ -178,7 +179,10 @@ public:
 									map<string,int> &disk_proj, map<string,int> &disk_proj_size);
 
 	void Driver::clearMemory(MainMemory &mem);
-	
+		
+	void Driver::print_result(vector<Tuple> res, vector<column_ref> attributes_to_print,
+								vector<string> relationFieldMap,string relation, SchemaManager &schemaMgr);
+
 	void Driver::print_result(vector<pair<Tuple,Tuple>> res, std::map<string,std::vector<column_ref>*> attributes_to_project,
 								map <string,vector<string>> relationFieldMap,string relation1, string relation2, SchemaManager &schemaMgr); 
 
