@@ -8,6 +8,7 @@
 #include <vector>
 #include <deque>
 #include<list>
+#include <utility>
 #include <string.h>
 
 #include "StorageManager.h"
@@ -18,6 +19,14 @@ class CalcContext;
 
 /** The example namespace is used to encapsulate the three parser classes
  * example::Parser, example::Scanner and example::Driver */
+
+struct comparator { int _i; comparator(int i) : _i( i ) { }; 
+bool operator()(const Tuple& t1, const Tuple& t2) const { return t1.getString(_i)>t2.getString(_i); } };
+
+struct comparator2 { int _i; comparator2(int i) : _i( i ) { } 
+bool operator()(const Tuple& t1, const Tuple& t2) const { return t1.getInt(_i)>t2.getInt(_i); } };
+
+
 namespace example {
 
 /** The Driver class brings together all components. It creates an instance of
@@ -26,6 +35,7 @@ namespace example {
  * sequence. Furthermore the driver object is available in the grammar rules as
  * a parameter. Therefore the driver class contains a reference to the
  * structure into which the parsed data is saved. */
+
 class Driver
 {
 public:
@@ -63,8 +73,9 @@ public:
 
 	void Driver::print_result_tuple(string res);
 	void Driver::print_result_tuple(Tuple t);
-	void Driver::get_blocks_to_mem(int start_ind,  MainMemory &mem, Relation* relationPtr);
-
+	void Driver::get_blocks_to_mem(int mem_start_ind, MainMemory &mem, int size, Relation* relationPtr, int rel_start_ind=0);
+	int Driver::sort_relation(string relation, SchemaManager &schemaMgr, MainMemory &mem, int memindex, 
+									 string column, map<string,int> &disk_proj, map<string,int> &disk_proj_size);
 	/** DB Project: run create statement, put schema into virtual.
      * @param stmtNo	
      * @param schemaMgr
@@ -140,8 +151,9 @@ public:
 	
 	/** Rerurns a vector with the relations from the FROM body of a SELECT
      * statement. */
-	void Driver::get_relations(const int stmtNo, vector<string> *relations, std::map<string,std::vector<column_ref>*> *attributes_to_project);
-	
+	void Driver::get_relations(const int stmtNo, vector<string> *relations, SchemaManager &schemaMgr,
+		std::map<string,std::vector<column_ref>*> *attributes_to_project,map<string,int> &disk_proj, 
+		map<string,int> &disk_proj_size);	
 	/** Rerurns a vector with the relations from the SELECT body of a SELECT
      * statement. */
 	void Driver::get_columns(const vector<string> *total_relations, const int stmtNo, SchemaManager &schemaMgr, 
@@ -153,9 +165,31 @@ public:
 	/**Process the WHERE body of a select statement */	
 	 vector<string> Driver::process_condition(const vector<string> *total_relations,const int stmtNo,SchemaManager &schemaMgr,tree* condition, 
 					std::map<string,std::vector<column_ref>*> *attributes_to_project);
+	 
+	vector<pair<Tuple,Tuple>> Driver::execute_condition(const vector<string> *total_relations,const int stmtNo,
+											SchemaManager &schemaMgr, tree* condition, 
+											std::map<string,std::vector<column_ref>*> *attributes_to_project,
+											map <string,vector<string>> relationFieldMap, MainMemory &mem,
+											map<string,int> &disk_proj, map<string,int> &disk_proj_size,int nest_level,
+											std::map<string,std::vector<column_ref>*> attributes_to_print);
+	vector<pair<Tuple,Tuple>> Driver::natural_join(string relation1,string relation2, SchemaManager &schemaMgr, MainMemory &mem,
+									std::map<string,std::vector<column_ref>*> *attributes_to_project,
+									int memindex, map<string,vector<string>> relationFieldMap, char* op, string column,
+									map<string,int> &disk_proj, map<string,int> &disk_proj_size);
+
+	void Driver::clearMemory(MainMemory &mem);
+	
+	void Driver::print_result(vector<pair<Tuple,Tuple>> res, std::map<string,std::vector<column_ref>*> attributes_to_project,
+								map <string,vector<string>> relationFieldMap,string relation1, string relation2, SchemaManager &schemaMgr); 
+
 
 	/**return the total size of the given relations */	
 	unsigned long Driver::relations_get_size(const vector<string> &relations, SchemaManager &schemaMgr);
+	void Driver::project_rel_block(std::vector<string> attributes,  vector<string> relationFields, 
+											Block &b , Schema &schema);
+	
+	int Driver::project_relation(vector<column_ref> *attributes, vector<string> relationFields, 
+											SchemaManager &schemaMgr, MainMemory &mem, string rel_name);
 
     /** Pointer to the current lexer instance, this is used to connect the
      * parser to the scanner. It is used in the yylex macro. */

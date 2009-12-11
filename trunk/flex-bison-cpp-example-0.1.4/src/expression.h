@@ -72,6 +72,7 @@ typedef struct atom_ref_t {
 	enum treetype atom_type;
 }atom_ref;
 
+
 class SQLTree{
 private:
 public:
