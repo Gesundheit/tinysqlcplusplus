@@ -1463,7 +1463,7 @@ namespace example {
 				int start_disk_block = start_disk_block=disk_proj[relation_name1];
 				Schema *schema = schemaMgr.getSchema(relation_name1);
 				bool str = ((schema->getFieldType(column_name1))=="STR20")?true:false;
-
+				vector<Tuple> result;
 				if (mem.getMemorySize()>=relationPtr->getNumOfBlocks()){
 					Driver::get_blocks_to_mem(0,mem,disk_proj_size[relation_name1],relationPtr,start_disk_block);
 					for(int i=0; i<relationPtr->getNumOfBlocks(); i++){
@@ -1473,7 +1473,7 @@ namespace example {
 							if(strcmp(condition->body.expr.op,">")==0) {
 								if(str) {
 									if(t.getString(schema->getFieldPos(column_name1))>arg2->body.variable){									
-											
+										result.push_back(t);
 									}
 									else {
 										Tuple t(schema);
@@ -1482,7 +1482,7 @@ namespace example {
 								}
 								else {
 									if(t.getInt(schema->getFieldPos(column_name1))>arg2->body.number){									
-										
+										result.push_back(t);
 									}
 									else {
 										Tuple t(schema);
@@ -1493,7 +1493,7 @@ namespace example {
 							else if(strcmp(condition->body.expr.op,"<")==0) {
 								if(str) {
 									if(t.getString(schema->getFieldPos(column_name1))<arg2->body.variable){									
-										
+										result.push_back(t);
 									}
 									else {
 										Tuple t(schema);
@@ -1502,7 +1502,7 @@ namespace example {
 								}
 								else {
 									if(t.getInt(schema->getFieldPos(column_name1))<arg1->body.number){									
-										
+										result.push_back(t);
 									}
 									else {
 										Tuple t(schema);
@@ -1513,7 +1513,7 @@ namespace example {
 							else if(strcmp(condition->body.expr.op,"=")==0) {
 								if(str) {
 									if(t.getString(schema->getFieldPos(column_name1))==arg2->body.variable){									
-										
+										result.push_back(t);
 									}
 									else {
 										Tuple t(schema);
@@ -1522,7 +1522,7 @@ namespace example {
 								}
 								else {
 									if(t.getInt(schema->getFieldPos(column_name1))==arg2->body.number){									
-										
+										result.push_back(t);
 									}
 									else {
 										Tuple t(schema);
@@ -1533,6 +1533,7 @@ namespace example {
 							
 						}
 						relationPtr->writeBlockFromMemory(disk_proj[relation_name1],i);
+
 					}
 				}	
 				else {
@@ -1544,7 +1545,7 @@ namespace example {
 							if(strcmp(condition->body.expr.op,">")==0) {
 								if(str) {
 									if(t.getString(schema->getFieldPos(column_name1))>arg2->body.variable){									
-											
+										result.push_back(t);
 									}
 									else {
 										Tuple t(schema);
@@ -1553,7 +1554,7 @@ namespace example {
 								}
 								else {
 									if(t.getInt(schema->getFieldPos(column_name1))>arg2->body.number){									
-										
+										result.push_back(t);
 									}
 									else {
 										Tuple t(schema);
@@ -1564,7 +1565,7 @@ namespace example {
 							else if(strcmp(condition->body.expr.op,"<")==0) {
 								if(str) {
 									if(t.getString(schema->getFieldPos(column_name1))<arg2->body.variable){									
-										
+										result.push_back(t);
 									}
 									else {
 										Tuple t(schema);
@@ -1573,7 +1574,7 @@ namespace example {
 								}
 								else {
 									if(t.getInt(schema->getFieldPos(column_name1))<arg1->body.number){									
-										
+										result.push_back(t);
 									}
 									else {
 										Tuple t(schema);
@@ -1584,7 +1585,7 @@ namespace example {
 							else if(strcmp(condition->body.expr.op,"=")==0) {
 								if(str) {
 									if(t.getString(schema->getFieldPos(column_name1))==arg2->body.variable){									
-										
+										result.push_back(t);
 									}
 									else {
 										Tuple t(schema);
@@ -1593,7 +1594,7 @@ namespace example {
 								}
 								else {
 									if(t.getInt(schema->getFieldPos(column_name1))==arg2->body.number){									
-										
+										result.push_back(t);
 									}
 									else {
 										Tuple t(schema);
@@ -1607,8 +1608,9 @@ namespace example {
 			
 					}
 				}
+				
 				if(nest_level==0) {
-					//print output
+					Driver::print_result(result,*(attributes_to_print[relation_name1]),relationFieldMap[relation_name1],relation_name1,schemaMgr);
 				}
 			}
 
@@ -1651,6 +1653,48 @@ namespace example {
 		return condition_relations1;
 	}
 
+
+	void Driver::print_result(vector<Tuple> res, vector<column_ref> attributes_to_print,
+								vector<string> attributes,string relation, SchemaManager &schemaMgr) 
+	{
+
+		for(int i=0; i<res.size(); i++) {
+			Tuple tuple = res[i];
+
+			Schema *schema = schemaMgr.getSchema(relation);
+
+			if(attributes_to_print.size()!=0) {
+				cout<< attributes_to_print[0].relation_name<<":: \t";
+				for(int j=0; j<attributes_to_print.size();j++){
+					int pos = schema->getFieldPos(attributes_to_print[j].column_name);
+					if(schema->getFieldType(attributes_to_print[j].column_name)=="STR20") {
+						if(tuple.getString(pos)=="") break;
+						cout<< attributes_to_print[j].column_name<<":"<<(tuple.getString(pos))<<" \t";
+					}
+					else {
+						if(tuple.getInt(pos)==-1) break;
+						cout<< attributes_to_print[j].column_name<<":"<<(tuple.getInt(pos))<<" \t";
+					}	
+				}
+			}
+			else{
+				cout<< attributes[0]<<":: \t";
+				for(int j=0; j<attributes.size();j++){
+					int pos = schema->getFieldPos(attributes[j]);
+					if(schema->getFieldType(attributes[j])=="STR20") {
+						if(tuple.getString(pos)=="") break;
+						cout<< attributes[j]<<":"<<(tuple.getString(pos))<<" \t";
+					}
+					else {
+						if(tuple.getInt(pos)==-1) break;
+						cout<< attributes[j]<<":"<<(tuple.getInt(pos))<<" \t";
+					}	
+				}
+			}
+
+			cout<<endl;
+		}
+	}
 	void Driver::print_result(vector<pair<Tuple,Tuple>> res, std::map<string,std::vector<column_ref>*> attributes_to_print,
 								map <string,vector<string>> relationFieldMap,string relation1, string relation2, SchemaManager &schemaMgr) 
 	{
