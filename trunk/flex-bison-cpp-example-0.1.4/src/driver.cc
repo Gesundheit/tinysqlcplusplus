@@ -287,9 +287,38 @@ namespace example {
 			vector<Tuple> totalTTuples;
 			if(calc.stmt_vector[stmtNo]->body.stmt.dtype==dist){
 				if(resultTuples!=NULL){
-					distinctRTuples->push_back(resultTuples->at(0));
+
+					// find projcted columns
+					vector<column_ref> *columns  = new vector<column_ref>;
+					get_columns(relations,stmtNo, schemaMgr, columns, attributes_to_project);
+					vector<string> columnVect;
+					if(calc.stmt_vector[stmtNo]->body.stmt.arg1->nodetype == variable_node){
+						for(int ct=0;ct<it->second.size();ct++){
+							columnVect.push_back(it->second.at(ct));
+						}
+					}else{
+						for(int ct=0;ct<columns->size();ct++){
+							columnVect.push_back(columns->at(ct).column_name);
+						}
+					}
+
+					vector<Tuple>* pTuples = new vector<Tuple>;
+					// project the needed column by forming new vector Tuples
+					for(int ct1=0;ct1<resultTuples->size();ct1++){
+						for(int ct2=0;ct2<columnVect.size();ct2++){
+							Tuple tuple(schema);
+							if(schema->getFieldType(columnVect.at(ct2))=="STR20"){
+								tuple.setField(schema->getFieldPos(columnVect.at(ct2)) , resultTuples->at(ct1).getString(schema->getFieldPos(columnVect.at(ct2))) );
+							}
+							if(schema->getFieldType(columnVect.at(ct2))=="INT"){
+								tuple.setField(schema->getFieldPos(columnVect.at(ct2)) , resultTuples->at(ct1).getInt(schema->getFieldPos(columnVect.at(ct2))) );
+							}
+							pTuples->push_back(tuple);
+						}
+					}
+					distinctRTuples->push_back(pTuples->at(0));
 					int ct2;
-					for(ct2=1;ct2<resultTuples->size();ct2++){
+					for(ct2=1;ct2<pTuples->size();ct2++){
 						int ct3;
 						bool found=false;
 						int ct4;
@@ -297,14 +326,14 @@ namespace example {
 						for(ct3=0;ct3<distinctRTuples->size();ct3++){
 							int sfound=it->second.size();
 							for(ct4=0;ct4<it->second.size();ct4++){
-								if(resultTuples->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4)))==0){
+								if(pTuples->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4)))==0){
 									// Not a number field, getString
-									if( resultTuples->at(ct2).getString(schema->getFieldPos(it->second.at(ct4))) ==
+									if( pTuples->at(ct2).getString(schema->getFieldPos(it->second.at(ct4))) ==
 										distinctRTuples->at(ct3).getString(schema->getFieldPos(it->second.at(ct4))) ){
 											sfound--;
 									}
 								}else{
-									if( resultTuples->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4))) ==
+									if( pTuples->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4))) ==
 										distinctRTuples->at(ct3).getInt(schema->getFieldPos(it->second.at(ct4)))){
 											sfound--;
 									}
@@ -312,9 +341,37 @@ namespace example {
 							}
 							if(sfound==0){found=true;}							
 						}
-							// match found
-							if(found==false){distinctRTuples->push_back(resultTuples->at(ct2));}						
 					}
+
+					//distinctRTuples->push_back(resultTuples->at(0));
+					//int ct2;
+					//for(ct2=1;ct2<resultTuples->size();ct2++){
+					//	int ct3;
+					//	bool found=false;
+					//	int ct4;
+					//	// take resultTuples compare with dinstinct
+					//	for(ct3=0;ct3<distinctRTuples->size();ct3++){
+					//		int sfound=it->second.size();
+					//		for(ct4=0;ct4<it->second.size();ct4++){
+					//			if(resultTuples->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4)))==0){
+					//				// Not a number field, getString
+					//				if( resultTuples->at(ct2).getString(schema->getFieldPos(it->second.at(ct4))) ==
+					//					distinctRTuples->at(ct3).getString(schema->getFieldPos(it->second.at(ct4))) ){
+					//						sfound--;
+					//				}
+					//			}else{
+					//				if( resultTuples->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4))) ==
+					//					distinctRTuples->at(ct3).getInt(schema->getFieldPos(it->second.at(ct4)))){
+					//						sfound--;
+					//				}
+					//			}
+					//		}
+					//		if(sfound==0){found=true;}							
+					//	}
+					//		// match found
+					//		if(found==false){distinctRTuples->push_back(resultTuples->at(ct2));}						
+					//}
+
 					resultTuples=distinctRTuples;
 					cout<<resultTuples->size()<<endl;
 				}else{
@@ -947,37 +1004,37 @@ namespace example {
 		vector<string>fields,map <string,vector<string>> relationFieldMap,Schema* schema){
 
 			if(resultTuples==NULL){
-			for(int ct=0;ct<fields.size();ct++){
-				cout<<fields.at(ct)<<"\t";
-			}
-			cout<<endl;
-			for(int ct1=0;ct1<totalTuples.size();ct1++){
-				for(int ct2=0;ct2<fields.size();ct2++){
-					if(schema->getFieldType(fields.at(ct2))=="STR20"){
-						cout<<totalTuples.at(ct1).getString(schema->getFieldPos(fields.at(ct2)))<<"\t";						
-					}
-					if(schema->getFieldType(fields.at(ct2))=="INT"){
-						cout<<totalTuples.at(ct1).getInt(schema->getFieldPos(fields.at(ct2)))<<"\t";						
-					}
+				for(int ct=0;ct<fields.size();ct++){
+					cout<<fields.at(ct)<<"\t";
 				}
 				cout<<endl;
-			}
+				for(int ct1=0;ct1<totalTuples.size();ct1++){
+					for(int ct2=0;ct2<fields.size();ct2++){
+						if(schema->getFieldType(fields.at(ct2))=="STR20"){
+							cout<<totalTuples.at(ct1).getString(schema->getFieldPos(fields.at(ct2)))<<"\t";						
+						}
+						if(schema->getFieldType(fields.at(ct2))=="INT"){
+							cout<<totalTuples.at(ct1).getInt(schema->getFieldPos(fields.at(ct2)))<<"\t";						
+						}
+					}
+					cout<<endl;
+				}
 			}else{
-			for(int ct=0;ct<fields.size();ct++){
-				cout<<fields.at(ct)<<"\t";
-			}
-			cout<<endl;
-			for(int ct1=0;ct1<resultTuples->size();ct1++){
-				for(int ct2=0;ct2<fields.size();ct2++){
-					if(schema->getFieldType(fields.at(ct2))=="STR20"){
-						cout<<resultTuples->at(ct1).getString(schema->getFieldPos(fields.at(ct2)))<<"\t";						
-					}
-					if(schema->getFieldType(fields.at(ct2))=="INT"){
-						cout<<resultTuples->at(ct1).getInt(schema->getFieldPos(fields.at(ct2)))<<"\t";						
-					}
+				for(int ct=0;ct<fields.size();ct++){
+					cout<<fields.at(ct)<<"\t";
 				}
 				cout<<endl;
-			}
+				for(int ct1=0;ct1<resultTuples->size();ct1++){
+					for(int ct2=0;ct2<fields.size();ct2++){
+						if(schema->getFieldType(fields.at(ct2))=="STR20"){
+							cout<<resultTuples->at(ct1).getString(schema->getFieldPos(fields.at(ct2)))<<"\t";						
+						}
+						if(schema->getFieldType(fields.at(ct2))=="INT"){
+							cout<<resultTuples->at(ct1).getInt(schema->getFieldPos(fields.at(ct2)))<<"\t";						
+						}
+					}
+					cout<<endl;
+				}
 			}
 
 		return;
@@ -1163,7 +1220,6 @@ namespace example {
 				node->body.expr.arg2->nodetype==number_node){
 					int i;
 					i = node->body.expr.arg2->body.number;
-					printf("condition number %d\n",i);
 					vector<Tuple> *r = new vector<Tuple>;
 					int ct;
 
@@ -1196,7 +1252,72 @@ namespace example {
 			} else if(node->body.expr.arg1->nodetype==number_node &&
 				node->body.expr.arg2->nodetype==number_node){
 					// not handling for now
-			} else{
+			} else if(node->body.expr.arg1->nodetype==colref_node &&
+				node->body.expr.arg2->nodetype==colref_node){
+					vector<Tuple> *r = new vector<Tuple>;
+					char*add = "+";
+					char*sub = "-";
+					char*mul = "*";
+					char*div = "/";
+
+					if(strcmp(node->body.expr.op,add)==0){
+						if(schema->getFieldType(node->body.expr.arg1->body.colref.arg1)=="INT" &&
+							schema->getFieldType(node->body.expr.arg2->body.colref.arg1)=="INT"){
+								for(int ct=0;ct<origSet.size();ct++){
+									origSet.at(ct).setField(schema->getFieldPos(node->body.expr.arg1->body.colref.arg1), origSet.at(ct).getInt(schema->getFieldPos(node->body.expr.arg1->body.colref.arg1))+  
+										origSet.at(ct).getInt(schema->getFieldPos(node->body.expr.arg2->body.colref.arg1))
+										);
+									r->push_back(origSet.at(ct));
+								}
+						}
+
+					}else if(node->body.expr.op == "-"){
+					}else if(node->body.expr.op=="*"){
+					}else if(node->body.expr.op=="/"){
+					}
+					cout<<"here\n"<<endl;
+					return r;
+			} else if(node->body.expr.arg1->nodetype==expr_node && node->body.expr.arg2->nodetype==number_node){
+
+				vector<Tuple>* leftNode = select_by_node_single_relation(node->body.expr.arg1,origSet,schema,relationFieldMap,stmtNo);
+				printf("expr & number\n");
+
+				//for(int ct=0; ct< leftNode->size();ct++){
+					//cout<< leftNode->at(ct).getInt(schema->getFieldPos("exam"))<<endl;
+				//}
+				int i;
+				i = node->body.expr.arg2->body.number;
+				vector<Tuple> *r = new vector<Tuple>;
+				int ct;
+
+				if(node->body.expr.op[0] == '='){
+							// find tuple(s) that would match condition
+							for(ct=0;ct<leftNode->size();ct++){
+								if(i == ((Tuple)leftNode->at(ct)).getInt(
+									schema->getFieldPos(node->body.expr.arg1->body.expr.arg1->body.colref.arg1)) ){
+										r->push_back(leftNode->at(ct));
+								}
+							}
+				}else if(node->body.expr.op[0] == '<'){
+							// find tuple(s) that would match condition
+							for(ct=0;ct<leftNode->size();ct++){
+								if(i > ((Tuple)leftNode->at(ct)).getInt(
+									schema->getFieldPos(node->body.expr.arg1->body.expr.arg1->body.colref.arg1)) ){
+										r->push_back(leftNode->at(ct));
+								}
+							}
+				}else if(node->body.expr.op[0] == '>'){
+							// find tuple(s) that would match condition
+							for(ct=0;ct<leftNode->size();ct++){
+								if(i < ((Tuple)leftNode->at(ct)).getInt(
+									schema->getFieldPos(node->body.expr.arg1->body.expr.arg1->body.colref.arg1)) ){
+										r->push_back(leftNode->at(ct));
+								}
+							}
+					}
+				cout<< r->size()<<endl;
+					return r;
+			}else{
 				vector<Tuple>* leftNode = select_by_node_single_relation(node->body.expr.arg1,origSet,schema,relationFieldMap,stmtNo);
 				vector<Tuple>* rightNode  = select_by_node_single_relation(node->body.expr.arg2,origSet,schema,relationFieldMap,stmtNo);
 
@@ -1230,7 +1351,7 @@ namespace example {
 						}
 					}
 					return r;
-				}else if(node->body.expr.type==binary && node->body.expr.type==binary && node->body.expr.op[0] == 'O'){
+				}else if(node->body.expr.type==binary && node->body.expr.op[0] == 'O'){
 					for(int ct=0;ct<leftNode->size();ct++){
 						r->push_back(leftNode->at(ct));
 					}
@@ -1257,7 +1378,9 @@ namespace example {
 								}
 							}
 							// match found
-							if(found==0){r->push_back(rightNode->at(ct3));}						
+							if(found!=0){
+								r->push_back(rightNode->at(ct3));
+							}						
 						}
 					}
 					return r;
