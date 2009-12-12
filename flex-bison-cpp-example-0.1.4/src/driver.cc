@@ -566,10 +566,10 @@ namespace example {
 			}
 			else {
 				Driver::get_blocks_to_mem(0,mem,disk_proj_size[relation2],relationPtr2,disk_proj_size[relation2]);
-				mem.dumpMemory();
+//				mem.dumpMemory();
 				for(int i=0;i<relationPtr1->getNumOfBlocks();i++) {
 					relationPtr1->readBlockToMemory(disk_proj[relation1]+i,mem.getMemorySize()-1);
-					mem.dumpMemory();
+//					mem.dumpMemory();
 					Block *b1 = mem.getBlock(mem.getMemorySize()-1);
 					vector<Tuple> tuples1 = b1->getTuples();
 					for(int j=0; j<tuples1.size(); j++){
@@ -1390,9 +1390,9 @@ namespace example {
 		if (mem.getMemorySize()>relationPtr->getNumOfBlocks()){
 			Driver::get_blocks_to_mem(0,mem,size,relationPtr);
 			for(int i=0; i<size; i++){
-				mem.dumpMemory();
+//				mem.dumpMemory();
 				Driver::project_rel_block(cols,relationFields, *mem.getBlock(i), schema);
-				mem.dumpMemory();
+//				mem.dumpMemory();
 				relationPtr->writeBlockFromMemory(size+i,i);
 			}
 		}	
@@ -1439,7 +1439,7 @@ namespace example {
 											std::map<string,std::vector<column_ref>*> *attributes_to_project,
 											map <string,vector<string>> relationFieldMap, MainMemory &mem,
 											map<string,int> &disk_proj, map<string,int> &disk_proj_size, int nest_level,
-											std::map<string,std::vector<column_ref>*> attributes_to_print)
+											std::map<string,std::vector<column_ref>*> attributes_to_print, int rel_offset)
 	{
 		vector<pair<Tuple,Tuple>> condition_relations1;
 		vector<pair<Tuple,Tuple>> condition_relations2;
@@ -1459,6 +1459,7 @@ namespace example {
 			}
 
 			if(arg2->nodetype==number_node || arg2->nodetype==literal_node){
+				condition->body.expr.res_size = disk_proj[relation_name1];
 				Relation *relationPtr = schemaMgr.getRelation(relation_name1);
 				int start_disk_block = start_disk_block=disk_proj[relation_name1];
 				Schema *schema = schemaMgr.getSchema(relation_name1);
@@ -1501,6 +1502,7 @@ namespace example {
 									}
 								}
 								else {
+									
 									if(t.getInt(schema->getFieldPos(column_name1))<arg2->body.number){									
 										result.push_back(t);
 									}
@@ -1604,13 +1606,15 @@ namespace example {
 							}								
 							
 						}
-						relationPtr->writeBlockFromMemory(disk_proj[relation_name1],0);
-			
+						relationPtr->writeBlockFromMemory(disk_proj[relation_name1],0);		
 					}
 				}
 				
 				if(nest_level==0) {
 					Driver::print_result(result,*(attributes_to_print[relation_name1]),relationFieldMap[relation_name1],relation_name1,schemaMgr);
+				}
+				else {
+					
 				}
 			}
 
@@ -1621,17 +1625,100 @@ namespace example {
 				if(nest_level==0) {
 					Driver::print_result(result,attributes_to_print,relationFieldMap,relation_name1,relation_name2,schemaMgr);
 
-					return result;
 				}
 				return result;
 			}
+			int proj_offset1 = 0, proj_offset2 = 0;
 
-			if(arg1->nodetype==expr_node) {
-				condition_relations1 =execute_condition(total_relations, stmtNo, schemaMgr, condition->body.expr.arg1,attributes_to_project,relationFieldMap,mem,disk_proj,disk_proj_size,nest_level+1,attributes_to_print);
+			if(strcmp(condition->body.expr.op,"OR")==0) {
+				if(condition->body.expr.jtype==nojoin && arg1->body.expr.jtype==nojoin && arg2->body.expr.jtype==nojoin) {
+					vector<Tuple> result;
+					string relation_name1 = arg1->body.expr.arg1->body.colref.arg1;
+					proj_offset1 = disk_proj[relation_name1];
+					execute_condition(total_relations, stmtNo, schemaMgr, condition->body.expr.arg1,attributes_to_project,relationFieldMap,mem,disk_proj,disk_proj_size,nest_level+1,attributes_to_print, proj_offset1);					
+					proj_offset2 = disk_proj[relation_name1]+arg1->body.expr.res_size;
+					execute_condition(total_relations, stmtNo, schemaMgr, condition->body.expr.arg2,attributes_to_project,relationFieldMap,mem,disk_proj,disk_proj_size,nest_level+1,attributes_to_print, proj_offset2);	
+					Relation *relationPtr1 = schemaMgr.getRelation(relation_name1);
+
+					if(nest_level==0){
+						for(int i=0; i<arg1->body.expr.res_size; i++){
+							relationPtr1->readBlockToMemory(proj_offset1+i-1,0);
+							vector<Tuple> result = (mem.getBlock(0))->getTuples();
+							Driver::print_result(result,*attributes_to_print[relation_name1],relationFieldMap[relation_name1],relation_name1,schemaMgr);					
+						}
+						for(int i=0; i< arg2->body.expr.res_size; i++){
+							relationPtr1->readBlockToMemory(proj_offset2+i-1,0);
+							vector<Tuple> result = (mem.getBlock(0))->getTuples();
+							Driver::print_result(result,*attributes_to_print[relation_name1],relationFieldMap[relation_name1],relation_name1,schemaMgr);					
+						}
+					}
+					int i=0;
+					for(; i<arg2->body.expr.res_size;i++) {
+						relationPtr1->readBlockToMemory(proj_offset2+i,0);
+						relationPtr1->writeBlockFromMemory(proj_offset2+condition->body.expr.res_size+i,0);		
+						
+					}
+				}
+
+				if(condition->body.expr.jtype==join && arg1->body.expr.jtype==nojoin && arg2->body.expr.jtype==nojoin) {
+					vector<Tuple> result;
+					string relation_name1 = arg1->body.expr.arg1->body.colref.arg1;
+					string relation_name2 = arg2->body.expr.arg1->body.colref.arg1;
+					proj_offset1 = disk_proj[relation_name1]+disk_proj_size[relation_name1];
+					execute_condition(total_relations, stmtNo, schemaMgr, condition->body.expr.arg1,attributes_to_project,relationFieldMap,mem,disk_proj,disk_proj_size,nest_level+1,attributes_to_print, proj_offset1);					
+					proj_offset2 = disk_proj[relation_name2]+disk_proj_size[relation_name2];
+					execute_condition(total_relations, stmtNo, schemaMgr, condition->body.expr.arg2,attributes_to_project,relationFieldMap,mem,disk_proj,disk_proj_size,nest_level+1,attributes_to_print, proj_offset2);	
+					Relation *relationPtr1 = schemaMgr.getRelation(relation_name1);
+					Relation *relationPtr2 = schemaMgr.getRelation(relation_name2);
+					if(nest_level==0){
+						for(int i=0; i<arg1->body.expr.res_size; i++){
+							relationPtr1->readBlockToMemory(proj_offset1+i-1,0);
+							vector<Tuple> result = (mem.getBlock(0))->getTuples();
+							Driver::print_result(result,*attributes_to_print[relation_name1],relationFieldMap[relation_name1],relation_name1,schemaMgr);					
+						}
+						for(int i=0; i< arg2->body.expr.res_size; i++){
+							relationPtr1->readBlockToMemory(proj_offset2+i-1,0);
+							vector<Tuple> result = (mem.getBlock(0))->getTuples();
+							Driver::print_result(result,*attributes_to_print[relation_name2],relationFieldMap[relation_name2],relation_name2,schemaMgr);					
+						}
+					}
+					int i=0;
+					for(; i<arg2->body.expr.res_size;i++) {
+						relationPtr1->readBlockToMemory(proj_offset2+i,0);
+						relationPtr1->writeBlockFromMemory(proj_offset2+condition->body.expr.res_size+i,0);		
+						
+					}
+				}
+
+				
 			}
-			if(arg2->nodetype==expr_node) {
-				condition_relations2 = execute_condition(total_relations, stmtNo, schemaMgr, condition->body.expr.arg2,attributes_to_project,relationFieldMap,mem,disk_proj,disk_proj_size,nest_level+1,attributes_to_print);
-			}	
+			
+			if(strcmp(condition->body.expr.op,"AND")==0) {
+				if(condition->body.expr.jtype==join && arg1->body.expr.jtype==join && arg2->body.expr.jtype==nojoin) {
+					vector<Tuple> result;
+					string relation_name = (*condition->body.expr.j->arg2_relations)[0];
+					Driver::execute_condition(total_relations,stmtNo,schemaMgr,condition->body.expr.arg2,attributes_to_project,relationFieldMap,mem,disk_proj,disk_proj_size,nest_level+1,attributes_to_print);
+					string relation_name1 = arg1->body.expr.arg1->body.colref.arg1;
+					string relation_name2 = arg1->body.expr.arg2->body.colref.arg1;
+					 vector<pair<Tuple,Tuple>> res = Driver::execute_condition(total_relations, stmtNo, schemaMgr, condition->body.expr.arg1,attributes_to_project,relationFieldMap,mem,disk_proj,disk_proj_size,nest_level+1,attributes_to_print);					
+
+					if(nest_level==0) {
+
+						Driver::print_result(res,attributes_to_print,relationFieldMap,relation_name1,relation_name2,schemaMgr);
+					}					
+				}
+
+			}
+	
+
+			if(condition->body.expr.jtype==join) {
+				if(proj_offset1!=0 && proj_offset2!=0) {
+					map<string,int> disk_p;
+					disk_p[relation_name1] = proj_offset1;
+					disk_p[relation_name2] = proj_offset2;
+				}
+
+			}
 
 			if(condition_relations1.size()==0) {
 				return condition_relations2;				
@@ -1824,6 +1911,9 @@ namespace example {
 			}
 			else if(condition_relations2.size()==0) {
 				return condition_relations1;
+			}
+			else if(condition_relations1.size()==1 && condition_relations2.size()==1 && condition_relations1[0]==condition_relations2[0]) {
+
 			}
 			else{
 				condition->body.expr.jtype = join; 

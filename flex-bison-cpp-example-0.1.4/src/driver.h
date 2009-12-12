@@ -14,6 +14,7 @@
 #include "StorageManager.h"
 #include "expression.h"
 
+#define DISK_OFFSET 300
 // forward declaration
 class CalcContext;
 
@@ -171,7 +172,7 @@ public:
 											std::map<string,std::vector<column_ref>*> *attributes_to_project,
 											map <string,vector<string>> relationFieldMap, MainMemory &mem,
 											map<string,int> &disk_proj, map<string,int> &disk_proj_size,int nest_level,
-											std::map<string,std::vector<column_ref>*> attributes_to_print);
+											std::map<string,std::vector<column_ref>*> attributes_to_print, int disk_offset=0);
 	vector<pair<Tuple,Tuple>> Driver::natural_join(string relation1,string relation2, SchemaManager &schemaMgr, MainMemory &mem,
 									std::map<string,std::vector<column_ref>*> *attributes_to_project,
 									int memindex, map<string,vector<string>> relationFieldMap, char* op, string column,
