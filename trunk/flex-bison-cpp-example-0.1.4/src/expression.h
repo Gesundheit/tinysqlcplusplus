@@ -38,6 +38,7 @@ typedef struct tree_t {
 			char* op;
 			enum joinnode jtype;
 			enum exprtype type;
+			int res_size;
 		}expr;
 		struct {
 			char *arg1;
@@ -115,6 +116,7 @@ public:
 		result->body.expr.arg2=r;
 		result->body.expr.type=t;
 		result->body.expr.jtype=nojoin;
+		result->body.expr.res_size=0;
 		if(t==binary){
 			size_t length = v.length();
 			if(length== 0){
