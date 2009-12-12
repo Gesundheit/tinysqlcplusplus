@@ -1501,7 +1501,7 @@ namespace example {
 									}
 								}
 								else {
-									if(t.getInt(schema->getFieldPos(column_name1))<arg1->body.number){									
+									if(t.getInt(schema->getFieldPos(column_name1))<arg2->body.number){									
 										result.push_back(t);
 									}
 									else {
@@ -1573,7 +1573,7 @@ namespace example {
 									}
 								}
 								else {
-									if(t.getInt(schema->getFieldPos(column_name1))<arg1->body.number){									
+									if(t.getInt(schema->getFieldPos(column_name1))<arg2->body.number){									
 										result.push_back(t);
 									}
 									else {
