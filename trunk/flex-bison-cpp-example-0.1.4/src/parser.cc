@@ -718,7 +718,7 @@ namespace example
 
   case 62:
 #line 277 "parser.yy"
-    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (2)].tree_s),NULL,NULL,paren);;}
+    {(yyval.tree_s)=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)(yysemantic_stack_[(3) - (2)].tree_s),NULL,"",paren);;}
     break;
 
   case 63:

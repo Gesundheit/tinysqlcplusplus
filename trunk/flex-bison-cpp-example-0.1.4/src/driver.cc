@@ -1277,7 +1277,41 @@ namespace example {
 					}
 					cout<<"here\n"<<endl;
 					return r;
-			} else if(node->body.expr.arg1->nodetype==expr_node && node->body.expr.arg2->nodetype==number_node){
+			} else if(node->body.expr.arg1->nodetype==expr_node && node->body.expr.arg2==NULL){
+				vector<Tuple>* leftNode = select_by_node_single_relation(node->body.expr.arg1,origSet,schema,relationFieldMap,stmtNo);
+				vector<Tuple>* rightNode  = select_by_node_single_relation(node->body.expr.arg2,origSet,schema,relationFieldMap,stmtNo);
+
+				vector<Tuple> *r = new vector<Tuple>;
+				map<string,vector<string>>::iterator it = relationFieldMap.find(calc.stmt_vector[stmtNo]->body.stmt.arg2->body.list.arg1->body.variable);
+				if(node->body.expr.type==not){
+					int ct2;
+					for(ct2=0;ct2<origSet.size();ct2++){
+						int ct3;
+						bool found=false;
+						int ct4;
+						// take orig. set, compare with left node
+						for(ct3=0;ct3< leftNode->size();ct3++){
+							for(ct4=0;ct4<it->second.size();ct4++){
+								if( ((Tuple)origSet.at(ct2)).getInt(schema->getFieldPos(it->second.at(ct4)))==0){
+									// Not a number field, getString
+									if(((Tuple)origSet.at(ct2)).getString(schema->getFieldPos(it->second.at(ct4))) ==
+										leftNode->at(ct3).getString(schema->getFieldPos(it->second.at(ct4))) ){
+											found=true;
+									}
+								}else{
+									if( ((Tuple)origSet.at(ct2)).getInt(schema->getFieldPos(it->second.at(ct4))) ==
+										leftNode->at(ct3).getInt(schema->getFieldPos(it->second.at(ct4)))){
+											found=true;
+									}
+								}
+							}
+						}
+						if(found == false){r->push_back(origSet.at(ct2));}		
+					}
+					return r;
+				}
+
+			}else if(node->body.expr.arg1->nodetype==expr_node && node->body.expr.arg2->nodetype==number_node){
 
 				vector<Tuple>* leftNode = select_by_node_single_relation(node->body.expr.arg1,origSet,schema,relationFieldMap,stmtNo);
 				printf("expr & number\n");
@@ -1352,8 +1386,8 @@ namespace example {
 					}
 					return r;
 				}else if(node->body.expr.type==binary && node->body.expr.op[0] == 'O'){
-					for(int ct=0;ct<leftNode->size();ct++){
-						r->push_back(leftNode->at(ct));
+					for(int ct=0;ct<rightNode->size();ct++){
+						r->push_back(rightNode->at(ct));
 					}
 					int ct2;
 					for(ct2=0;ct2<leftNode->size();ct2++){
@@ -1379,7 +1413,7 @@ namespace example {
 							}
 							// match found
 							if(found!=0){
-								r->push_back(rightNode->at(ct3));
+								r->push_back(leftNode->at(ct3));
 							}						
 						}
 					}

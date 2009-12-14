@@ -274,7 +274,7 @@ atom:
 	STRING															{$$=(SQLTree *)driver.calc.aSQLTree->make_literal(*$1);}							  
 	| INTNUM														{$$=(SQLTree *)driver.calc.aSQLTree->make_number($1);}							   
 	| column_ref													{$$=$1;}	
-	| '(' expr ')'													{$$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$2,NULL,NULL,paren);} 
+	| '(' expr ')'													{$$=(SQLTree *)driver.calc.aSQLTree->make_expr((tree *)$2,NULL,"",paren);} 
 	;
 
 column_ref: 
