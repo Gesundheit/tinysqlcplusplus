@@ -1152,16 +1152,17 @@ namespace example {
 					printf("condition number %d\n",i);
 					vector<Tuple> *r = new vector<Tuple>;
 					int ct;
-
-					if(node->body.expr.op[0] == '='){
+					
+					if(strcmp(node->body.expr.op,"=")==0){
 							// find tuple(s) that would match condition
 							for(ct=0;ct<origSet.size();ct++){
-								if(i == ((Tuple)origSet.at(ct)).getInt(
-									schema->getFieldPos(node->body.expr.arg1->body.colref.arg1)) ){
+								int pos= schema->getFieldPos(node->body.expr.arg1->body.colref.arg1);
+								int a = ((Tuple)origSet.at(ct)).getInt(schema->getFieldPos(node->body.expr.arg1->body.colref.arg1)); 
+								if(i == ((Tuple)origSet.at(ct)).getInt(schema->getFieldPos(node->body.expr.arg1->body.colref.arg1)) ){
 										r->push_back(origSet.at(ct));
 								}
 							}
-					}else if(node->body.expr.op[0] == '<'){
+					}else if(strcmp(node->body.expr.op,"<")==0){
 							// find tuple(s) that would match condition
 							for(ct=0;ct<origSet.size();ct++){
 								if(i <= ((Tuple)origSet.at(ct)).getInt(
@@ -1169,7 +1170,7 @@ namespace example {
 										r->push_back(origSet.at(ct));
 								}
 							}
-					}else if(node->body.expr.op[0] == '>'){
+					}else if(strcmp(node->body.expr.op,">")==0){
 							// find tuple(s) that would match condition
 							for(ct=0;ct<origSet.size();ct++){
 								if(i >= ((Tuple)origSet.at(ct)).getInt(
@@ -1400,11 +1401,15 @@ namespace example {
 							for(ct4=0;ct4<it->second.size();ct4++){
 								if(leftNode->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4)))==0){
 									// Not a number field, getString
+									string a = leftNode->at(ct2).getString(schema->getFieldPos(it->second.at(ct4))) ;
+									string b = rightNode->at(ct3).getString(schema->getFieldPos(it->second.at(ct4)));
 									if( leftNode->at(ct2).getString(schema->getFieldPos(it->second.at(ct4))) ==
 										rightNode->at(ct3).getString(schema->getFieldPos(it->second.at(ct4))) ){
 											found--;
 									}
 								}else{
+									int a = leftNode->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4))) ;
+									int b = rightNode->at(ct3).getInt(schema->getFieldPos(it->second.at(ct4)));
 									if( leftNode->at(ct2).getInt(schema->getFieldPos(it->second.at(ct4))) ==
 										rightNode->at(ct3).getInt(schema->getFieldPos(it->second.at(ct4)))){
 											found--;
@@ -1413,7 +1418,8 @@ namespace example {
 							}
 							// match found
 							if(found!=0){
-								r->push_back(leftNode->at(ct3));
+								r->push_back(leftNode->at(ct2));
+								break;
 							}						
 						}
 					}
@@ -1518,16 +1524,6 @@ namespace example {
 
 	}
 
-/*	map<string,vector<tuples>> Driver::natutal_join(const vector<string> *total_relations, SchemaManager &schemaMgr, tree* condition, 
-										std::map<string,std::vector<column_ref>*> *attributes_to_project,
-										map <string,vector<string>> relationFieldMap,
-										vector<tuples>> arg1, map<string,vector<tuples>> arg2)
-	{
-				
-
-		
-	}
-*/
 
 	int Driver::project_relation(vector<column_ref> *attributes, vector<string> relationFields, 
 											SchemaManager &schemaMgr, MainMemory &mem, string rel_name) 
@@ -1616,8 +1612,14 @@ namespace example {
 			}
 
 			if(arg2->nodetype==number_node || arg2->nodetype==literal_node){
-				condition->body.expr.res_size = disk_proj[relation_name1];
 				Relation *relationPtr = schemaMgr.getRelation(relation_name1);
+				if(disk_proj[relation_name1]) {
+					condition->body.expr.res_size = disk_proj[relation_name1];
+				}
+				else {
+					condition->body.expr.res_size = relationPtr->getNumOfBlocks();
+				}
+			
 				int start_disk_block = start_disk_block=disk_proj[relation_name1];
 				Schema *schema = schemaMgr.getSchema(relation_name1);
 				bool str = ((schema->getFieldType(column_name1))=="STR20")?true:false;
@@ -1950,7 +1952,7 @@ namespace example {
 			Schema *schema1 = schemaMgr.getSchema(relation1);
 			Schema *schema2 = schemaMgr.getSchema(relation2);
 
-			if(attributes_to_print.size()!=0) {
+			if(attributes_to_print[relation1]->size()!=0) {
 				vector<column_ref> attributes1 = *(attributes_to_print[relation1]);
 				vector<column_ref> attributes2 = *(attributes_to_print[relation2]);
 				cout<< attributes1[0].relation_name<<":: \t";
